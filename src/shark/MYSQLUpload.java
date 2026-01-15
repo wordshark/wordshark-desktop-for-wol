@@ -332,13 +332,10 @@ public class MYSQLUpload {
 
     static final String GTX_ROOT_XML = "root";
     static final String GTX_TOPICROOT_XML = "Topic";
-    static final String GTX_SOUNDS_XML = "Sounds";
     static final String GTX_TBS_XML = "TopicBlocks";
     static final String GTX_TB_XML = "TopicBlock";
     static final String GTX_TB_TYPE_AT_XML = "TBType";
     static final String GTX_REF_TYPE_AT_XML = "RefType";
-    static final String GTX_TB_INDEXNO_AT_XML = "TopicBlockIndexNo";
-    static final String GTX_TB_NUM_AT_XML = "Num";
     static final String GTX_TB_NUM_AT_GAMEBLOCKTYPE = "GameBlockType";
 
     static final String TOPICBLOCKGAMETYPE_HELICOPTERLISTEN = "HELICOPTERLISTEN";
