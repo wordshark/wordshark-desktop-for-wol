@@ -58,7 +58,7 @@ public class MYSQLUpload {
     static JSONArray insertsJson = new JSONArray();
     
     public class apiConfig{
-      String accessUrl = null;
+      String url = null;
       String accessToken = null;
       String accessGrantType = "password";
       String accessClientId = null;
@@ -68,13 +68,13 @@ public class MYSQLUpload {
       String accessPassword = null;
       
       public apiConfig(
-              String accessUrlP,
+              String urlP,
               String accessClientIdP,
               String accessSecretP,
               String accessUserNameP,
               String accessPasswordP
               ){
-          accessUrl = accessUrlP;
+          url = urlP;
           accessClientId = accessClientIdP;
           accessSecret = accessSecretP;
           accessUserName = accessUserNameP;
@@ -85,21 +85,21 @@ public class MYSQLUpload {
     
     final apiConfig[] API_CONFIGS = new apiConfig[]{
         new apiConfig(
-                "http://course-api.onwordshark.local/oauth/token",
+                "http://course-api.onwordshark.local/",
                 "2",
                 "Xv9EUOiayTVU6utfgHc6NM48JFOReSy4FwFzmuBs",
                 "platformnoreply@onwordshark.com",
                 "X4HvBt6%BuZ=q&nB"
         ),
         new apiConfig(
-                "https://course-api-staging.onwordshark.com/oauth/token",
+                "https://course-api-staging.onwordshark.com/",
                 "2",
                 "Xv9EUOiayTVU6utfgHc6NM48JFOReSy4FwFzmuBs",
                 "platformnoreply@onwordshark.com",
                 "X4HvBt6%BuZ=q&nB"
         ),        
         new apiConfig(
-                "https://course-api.onwordshark.com/oauth/token",
+                "https://course-api.onwordshark.com/",
                 "2",
                 "Xv9EUOiayTVU6utfgHc6NM48JFOReSy4FwFzmuBs",
                 "platformnoreply@onwordshark.com",
@@ -779,7 +779,7 @@ public class MYSQLUpload {
         apiConfig config = API_CONFIGS[currentEnvironment];
         String ret = null;
         try {
-            java.net.URL url = new java.net.URL(config.accessUrl);
+            java.net.URL url = new java.net.URL(config.url + "oauth/token");
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
@@ -956,6 +956,9 @@ public class MYSQLUpload {
         
         String s= null;
         int ret = -1;
+        
+        
+        
         if(CURRENT_MODE == MODE_DIRECT){
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("name", HeadingDisplay);
@@ -965,7 +968,8 @@ public class MYSQLUpload {
             if(UnitType != null){
                 jsonObject.put("type", UnitType);
             }
-            ret = apiGetId("http://course-api.onwordshark.local/ports/unit",
+            
+            ret = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/unit",
                 jsonObject.toString());   
         }
         else{
@@ -3142,7 +3146,7 @@ public class MYSQLUpload {
                     postJsonObject.put("json_data", getTopicJsonForUpload(tree, lastUnitId, lasttopicindex, selnode.get()));
                     wordlistDoneCount++;
                     writeJson(t.name, postJsonObject.toJSONString());
-                    int g = apiGetId("http://course-api.onwordshark.local/ports/wordlist",
+                    int g = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/wordlist",
                         postJsonObject.toString());
                     lasttopicindex++;
                     System.out.println("....Finished: " + String.valueOf(g) + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
@@ -3151,7 +3155,7 @@ public class MYSQLUpload {
         }
         
         String str = String.valueOf(java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(Calendar.getInstance().getTimeInMillis() - portStartTime));
-        int res = apiGetId("http://course-api.onwordshark.local/ports/"+currCourseVersion+"/activate", null);
+        int res = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/"+currCourseVersion+"/activate", null);
         if(Integer.parseInt(currCourseVersion) == res){
             u.okmess(shark.programName, "Successfully finished in : " + str + " minutes.", sharkStartFrame.mainFrame);        
         }
