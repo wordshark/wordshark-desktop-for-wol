@@ -53,6 +53,7 @@ public class MYSQLUpload {
     final static int CURRENT_MODE = MODE_DIRECT;
     static String accessToken = null;
     static int currentEnvironment = -1;
+    static String currentCourse = null;
     
     static JSONArray insertsJson = new JSONArray();
     
@@ -316,12 +317,12 @@ public class MYSQLUpload {
     static long startTime;
     static int attributeCount = -1;
     static int attributeIndexCount = -1;
-    static final String SVGIMAGEFOLDER = "C:\\Users\\paulr\\Dropbox\\NetBeansProjects\\jbproject6_3\\svg";
-    static final String RESTXMLFOLDER = "C:\\Users\\paulr\\Dropbox\\NetBeansProjects\\jbproject6_3\\XML\\restXML";
-    static final String RESTJSONFOLDER = "C:\\Users\\paulr\\Dropbox\\NetBeansProjects\\jbproject6_3\\json_output";
+    static final String SVGIMAGEFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\svg";
+    static final String RESTXMLFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\XML\\restXML";
+    static final String RESTJSONFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\json_output";
     
     
-    static final String WORDSXMLFOLDER = "C:\\Users\\paulr\\Dropbox\\NetBeansProjects\\jbproject6_3\\XML\\wordsXML";
+    static final String WORDSXMLFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\XML\\wordsXML";
     static final String BMPIMAGEFOLDERPLUS = "C:\\xampp\\htdocs\\img\\publicimages\\";
     static final String WEBIMAGEFOLDERPLUS = "/img/publicimages/";
     static final String WEBSVGFOLDERPLUS = "/img/svg/";
@@ -2988,7 +2989,7 @@ public class MYSQLUpload {
     }
 
     public void topicScan(topicTree topicTreeList, jnode selnode, int p, String courseids[], String coursenames[]) {
-
+        currentCourse = selnode.get();
         long portStartTime = Calendar.getInstance().getTimeInMillis();
         String parentCourseID = null;
         String parentName = null;
@@ -2996,8 +2997,8 @@ public class MYSQLUpload {
         int levelStart = 2;
         
         int k;
-        if ((k = u.findString(coursenames, selnode.get())) >= 0) {
-            parentName = selnode.get();
+        if ((k = u.findString(coursenames, currentCourse)) >= 0) {
+            parentName = currentCourse;
             parentCourseID = courseids[k];
         } else {
             int y;
@@ -7832,11 +7833,19 @@ public class MYSQLUpload {
         }
         
         void writeJson(String topicName, String json) {
-            File f = new File(RESTJSONFOLDER + shark.sep + formatForFileWrite(topicName) + ".json");
-            File fp = new File(RESTJSONFOLDER);
-            if (!fp.exists()) {
-                fp.mkdirs();
-            }
+
+            File f = new File(
+                RESTJSONFOLDER + shark.sep
+                + ENV_NAMES[currentEnvironment] + shark.sep
+                + currentCourse + shark.sep
+                + currCourseVersion + shark.sep
+                + toSafeFilename(topicName) + ".json"
+            );
+
+            // Ensure parent directory exists
+            f.getParentFile().mkdirs();
+
+            
             if (!f.exists()) {
                 PrintWriter pw = null;
                 try {
@@ -7846,6 +7855,19 @@ public class MYSQLUpload {
                 } catch (Exception e) {
                 }
             }
+        }
+        
+        String toSafeFilename(String input) {
+            // Replace illegal characters with underscore
+            String safe = input.replaceAll("[\\\\/:*?\"<>|]", "_");
+
+            // Trim trailing periods or spaces (Windows does not allow them)
+            safe = safe.replaceAll("[\\. ]+$", "");
+
+            // Optionally trim leading spaces
+            safe = safe.trim();
+
+            return safe;
         }
         
         int getTopicCount(jnode node){
