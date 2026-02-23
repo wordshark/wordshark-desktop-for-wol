@@ -2502,8 +2502,11 @@ int ht = 0;
           if(updatingTopics){
               if (currTopicView != null && currTopicView.changed) {
                   int res = u.yesnocancel(shark.programName, "Do you want to save any changes?", sharkStartFrame.mainFrame);
-                  if(res<0)return;
-                  else if(res==0)currTopicView.save();
+                  if(res!=0){
+                      setupgames();
+                      return;
+                  }
+                  currTopicView.save();
               }
               if(markgamescoursetree!= null){
                   saveMarkCourseChanges();
