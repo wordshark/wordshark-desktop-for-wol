@@ -4498,6 +4498,16 @@ public class MYSQLUpload {
             j++;
         }
         int baselev = st.curr.levels[j];
+        
+        String allSentenceTargetWords[] = getAllSentenceTargetWords(j, baselev, st, isCaptions);
+        int allTargetsIds[] = new int[]{};
+        int sentenceTargetType[] = new int[]{WORD_TYPE_SENTENCE};
+    
+        for(int index = 0; index < allSentenceTargetWords.length; index++){ 
+           int id = doWordNew(new word(allSentenceTargetWords[index], "publictopics"), topic_id, null, sentenceTargetType);
+           allTargetsIds = u.addint(allTargetsIds, id);   
+        }        
+        
         while (j < st.curr.names.length && st.curr.levels[j] >= baselev && (!isCaptions || isCaption(st.curr.names[j]))) {
             Attr attr = null;
             if (st.curr.names[j].startsWith(topic.types[topic.SELECTDISTRACTORS])) {
@@ -4535,7 +4545,7 @@ public class MYSQLUpload {
                 attr.setValue(u.formatTextforUpload(splain,CURRENT_MODE));
                 sentenceElement.setAttributeNode(attr);
             }
-            String ssTargets[];
+            String ssTargets[] = null;
             String ss[];
             Element mainE = null;
             String sentenceDistractors[] = null;
@@ -4571,7 +4581,9 @@ public class MYSQLUpload {
                             cword = currStandardWords[p].v();
                         }
                     }
-                    if ((sentenceDistractors = getSentenceDistractorWords(st.curr.names[j], senttype)) != null) {
+                    sentenceDistractors = getSentenceDistractorWords(st.curr.names[j], senttype);
+                    
+                    if (sentenceDistractors != null) {
                         // convert the explicit sentence distractors to the correct case based on the target word
                         for (int p = 0; p < sentenceDistractors.length; p++) {
                             boolean isTargetWordCapital = Character.isUpperCase(cword.charAt(0));
@@ -4658,42 +4670,75 @@ public class MYSQLUpload {
             } else {
                 ss = getSentenceDistractorWords(st.curr.names[j], senttype);
             }
-            mainE = null;
-            for (int i = 0; ss != null && i < ss.length; i++) {
+            if(ss != null){
+                mainE = null;
+                for (int i = 0; ss != null && i < ss.length; i++) {
+                    if (mainE == null) {
+                        mainE = doc.createElement(GTX_DISTRACTORS_XML);
+                        sentenceElement.appendChild(mainE);
+                    }
+                    Element eleSub = doc.createElement(GTX_DISTRACTOR_XML);
+                    mainE.appendChild(eleSub);
+                    //              word w1 = new word(ss[i].toLowerCase(),"publictopics");
+                    String cword = ss[i];
+                    for (int p = 0; currStandardWords != null && p < currStandardWords.length; p++) {
+                        if (currStandardWords[p].v().toLowerCase().equals(cword.toLowerCase())) {
+                            cword = currStandardWords[p].v();
+                        }
+                    }
+                    word w1 = new word(cword, "publictopics");
+                    String im = findImageinStandardList(w1);
+                    int iiarr[] = new int[]{WORD_TYPE_SENTENCE};
+                    if (isSimpleCrossword) {
+                        iiarr = u.addint(iiarr, WORD_TYPE_SIMPLE);
+                    }
+                    if (t.fl) {
+                        iiarr = u.addint(iiarr, WORD_TYPE_FL);
+                    }
+
+                    int b = doWordNew(w1, topic_id, im, iiarr);
+                    attr = doc.createAttribute("WordID");
+                    attr.setValue(String.valueOf(b));
+                    eleSub.setAttributeNode(attr);
+                    if (b < 0) {
+                        int gg;
+                        gg = 9;
+                    }
+                }
+            }
+            // use the other targets as specified defaults
+            else if(ssTargets != null){
                 if (mainE == null) {
                     mainE = doc.createElement(GTX_DISTRACTORS_XML);
                     sentenceElement.appendChild(mainE);
                 }
-                Element eleSub = doc.createElement(GTX_DISTRACTOR_XML);
-                mainE.appendChild(eleSub);
-                //              word w1 = new word(ss[i].toLowerCase(),"publictopics");
-                String cword = ss[i];
-                for (int p = 0; currStandardWords != null && p < currStandardWords.length; p++) {
-                    if (currStandardWords[p].v().toLowerCase().equals(cword.toLowerCase())) {
-                        cword = currStandardWords[p].v();
-                    }
-                }
-                word w1 = new word(cword, "publictopics");
-                String im = findImageinStandardList(w1);
-                int iiarr[] = new int[]{WORD_TYPE_SENTENCE};
-                if (isSimpleCrossword) {
-                    iiarr = u.addint(iiarr, WORD_TYPE_SIMPLE);
-                }
-                if (t.fl) {
-                    iiarr = u.addint(iiarr, WORD_TYPE_FL);
-                }
 
-                int b = doWordNew(w1, topic_id, im, iiarr);
-                attr = doc.createAttribute("WordID");
-                attr.setValue(String.valueOf(b));
-                eleSub.setAttributeNode(attr);
-                if (b < 0) {
-                    int gg;
-                    gg = 9;
+                loopTargets:for(int index = 0; index < allSentenceTargetWords.length; index++){ 
+                    for(int index2 = 0; index2 < ssTargets.length; index2++){
+                        if(allSentenceTargetWords[index].equals(ssTargets[index2])){
+                            continue loopTargets;
+                        }
+                    }
+                    Element eleSub = doc.createElement(GTX_DISTRACTOR_XML);
+                    mainE.appendChild(eleSub);
+                    attr = doc.createAttribute("WordID");
+                    attr.setValue(String.valueOf(allTargetsIds[index]));
+                    eleSub.setAttributeNode(attr); 
                 }
             }
             j++;
         }
+    }
+    
+    String[] getAllSentenceTargetWords(int j, int baselev, saveTree1 st, boolean isCaptions){
+        String allTargets[] = new String[]{};
+        while (j < st.curr.names.length && st.curr.levels[j] >= baselev && (!isCaptions || isCaption(st.curr.names[j]))) {
+            String senttype = getSentenceType(st.curr.names[j]);
+            String ssTargets[] = getSentenceTargetWords(st.curr.names[j], senttype, true);
+            allTargets = u.addString(allTargets, ssTargets);
+            j++;
+        }
+        return allTargets;
     }
 
     static String getSentenceType(String s) {

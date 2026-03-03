@@ -79,7 +79,7 @@ public class shark {
   static String licenceType = LICENCETYPE_DVD;
   static String language = LANGUAGE_EN;
   public static String versionNo = "5";
-  public static String versionNoDetailed = "6.128.00";
+  public static String versionNoDetailed = "6.129.00";
   public static String versionLatestCritical = "6.100.00";
   static boolean testing=true;
 
