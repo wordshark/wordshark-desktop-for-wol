@@ -235,8 +235,8 @@ public class topic  extends sharkTree{
   
   public int sentenceDistractorNo = -1;
   public int mySQL_Topic_ID;
-           public String HEADING_TEXT = "Heading:";
-          String HEADING_NO_TEXT = "No";
+  public String HEADING_TEXT = "Heading:";
+  String HEADING_NO_TEXT = "No";
 //----------------------------------------------------
   public static void makeList(JList list) {
      list.setListData(types);

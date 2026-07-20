@@ -46,6 +46,8 @@ import java.text.*;
  * @author paulr
  */
 public class MYSQLUpload {
+    
+    final static String PROJECT_PATH = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\";
 
     final static int MODE_VIA_DUMP = 0;
     final static int MODE_DIRECT = 1;
@@ -292,7 +294,7 @@ public class MYSQLUpload {
     int CAT_SOUNDS = 1;
     int CAT_PHRASES = 3;
     int CAT_NONPHONICS = 0;
-    static final String[] GAMESBLOCKSTOIGNORE = new String[]{"crossword 2", "add suffix", "classify", "tracking", "snakes & ladders"};
+    static final String[] GAMESBLOCKSTOIGNORE = new String[]{"crossword 2", "add suffix", "classify", "snakes & ladders"};
     static final String[] GAMESTOIGNORE = new String[]{"add suffix", "balance", "balloons", "bingo listen", "bingo words", "build phrase (from spoken)", "build phrase (with picture)", "build word", "chunks", "classify", "crossword 2", "dictionary fish", "fast find", "find phrase", "find sound (for picture)", "flums", "fruit machine", "hidden letter", "holes", "jumbled", "learn", "letter maze", "lottery", "maze alter", "moving", "pairs (linked words)", "pairs (sound+letter)", "say phrase", "scan", "scan (linked words)", "shredder", "snap (linked words)", "split sound", "tilt", "tracking", "trains", "trains (phonics)", "trains (syllables)", "word sort", "save the sharks", "rolling"};
     //   static final String[] GAMESTABSTOIGNORE = new String[]{"crossword 2","add suffix", "classify", "tracking"};
     static final String[] PHONICDISTRACTOR_GAMECODEID = new String[]{"findsound"};
@@ -317,9 +319,9 @@ public class MYSQLUpload {
     static long startTime;
     static int attributeCount = -1;
     static int attributeIndexCount = -1;
-    static final String SVGIMAGEFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\svg";
-    static final String RESTXMLFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\XML\\restXML";
-    static final String RESTJSONFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\json_output";
+    static final String SVGIMAGEFOLDER = PROJECT_PATH + "svg";
+    static final String RESTXMLFOLDER = PROJECT_PATH + "XML\\restXML";
+    static final String RESTJSONFOLDER = PROJECT_PATH + "XML\\wordsXML";
     
     
     static final String WORDSXMLFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\XML\\wordsXML";
@@ -4708,14 +4710,12 @@ public class MYSQLUpload {
             }
             // use the other targets as specified defaults
             else if(ssTargets != null){
-                if (mainE == null) {
-                    mainE = doc.createElement(GTX_DISTRACTORS_XML);
-                    sentenceElement.appendChild(mainE);
-                }
+                mainE = doc.createElement(GTX_DISTRACTORS_XML);
+                sentenceElement.appendChild(mainE);
 
                 loopTargets:for(int index = 0; index < allSentenceTargetWords.length; index++){ 
                     for(int index2 = 0; index2 < ssTargets.length; index2++){
-                        if(allSentenceTargetWords[index].equals(ssTargets[index2])){
+                        if(allSentenceTargetWords[index].equalsIgnoreCase(ssTargets[index2])){
                             continue loopTargets;
                         }
                     }
@@ -4735,11 +4735,28 @@ public class MYSQLUpload {
         while (j < st.curr.names.length && st.curr.levels[j] >= baselev && (!isCaptions || isCaption(st.curr.names[j]))) {
             String senttype = getSentenceType(st.curr.names[j]);
             String ssTargets[] = getSentenceTargetWords(st.curr.names[j], senttype, true);
-            allTargets = u.addString(allTargets, ssTargets);
+            
+            for (int i = 0; i < ssTargets.length; i++) {
+                String newString = getCorrectCaseFromStandardList(ssTargets[i]);
+                  // String newString = ssTargets[i].toLowerCase();
+                if(u.findString(allTargets, newString) < 0){
+                    allTargets = u.addString(allTargets, newString);
+                }
+            }
             j++;
         }
         return allTargets;
     }
+    
+    String getCorrectCaseFromStandardList(String word){
+        for (int i = 0; i < currStandardWords.length; i++) {
+            String plainWord = currStandardWords[i].v();
+            if(plainWord.toLowerCase().equals(word.toLowerCase())){
+                return plainWord;
+             }
+        }                
+        return word;
+    } 
 
     static String getSentenceType(String s) {
         s = s.trim();
