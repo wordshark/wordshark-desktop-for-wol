@@ -845,7 +845,7 @@ public class MYSQLUpload {
                 JSONParser parser = new JSONParser();
                 JSONObject ob = (JSONObject)parser.parse(response.toString());
                 if(con.getResponseCode() == 201 || con.getResponseCode() == 200){
-                    return Integer.parseInt(String.valueOf(((JSONObject)ob.get("data")).get("id")));
+                    return Integer.parseInt(String.valueOf(ob.get("id")));
                 }
                 else{
                     System.out.println(con.getErrorStream().toString());
@@ -4746,7 +4746,7 @@ public class MYSQLUpload {
             j++;
         }
         return allTargets;
-    }
+    }   
     
     String getCorrectCaseFromStandardList(String word){
         for (int i = 0; i < currStandardWords.length; i++) {
@@ -6796,6 +6796,8 @@ public class MYSQLUpload {
     
     JSONObject getTopicJsonForUpload(treeDetails tree, int unitId, int lastTopicIndex, String courseName) {        
         JSONObject topicObject = new JSONObject();
+   
+        currStandardWords = getStandardWords(tree.st);
         
         System.out.println("....Doing standard list");
         JSONArray standard = getStandard(tree, UPLOAD_TYPE_STANDARD);
@@ -7105,26 +7107,60 @@ public class MYSQLUpload {
         JSONArray references = new JSONArray();
         for (int j = 0; j < selects.size(); ++j) {
             JSONObject select = (JSONObject)selects.get(j);
-            int postSelectIndex = (int)select.get("desktopSelectIndex") + 1;
+            int selectedIndex = (int)select.get("desktopSelectIndex");
+            int postSelectIndex = selectedIndex + 1;
             int startLevel = tree.st.curr.levels[postSelectIndex];
+            
+            String allSentenceTargetWords[] = getAllSentenceTargetWords(postSelectIndex, tree.st.curr.levels[postSelectIndex], tree.st, t.phrases);
 
             for (int i = postSelectIndex; i < tree.st.curr.levels.length; ++i) {     
                 if(tree.st.curr.levels[i]<startLevel){
                     break;
                 }
-                JSONObject reference = getSentenceReference(tree, i, startIndex, uploadType);
+                JSONObject reference = getSentenceReference(tree, i, startIndex, uploadType, allSentenceTargetWords);
                 references.add(reference);
             }  
         }
         return references;
     }   
 
-    JSONObject getSentenceReference(treeDetails tree, int i, int selectIndex, String uploadType) {
+    JSONObject getSentenceReference(treeDetails tree, int i, int selectIndex, String uploadType, String[] allSentenceTargetWords) {
         JSONObject subSelect = new JSONObject();
         String sentType = getSentenceType(tree.st.curr.names[i]);
         String sentenceDistractors[] = getSentenceDistractorWords(tree.st.curr.names[i], sentType);
+
+        // Get ALL target words in one array
+        String targetWords[] = getSentenceTargetWords(tree.st.curr.names[i], sentType, true);
+
+        // Create case-insensitive set of target words
+        Set<String> targetSet = new HashSet<String>();
+        for (String target : targetWords) {
+            if (target != null) {
+                targetSet.add(target.toLowerCase()); // Convert to lowercase for comparison
+            }
+        }
+
+        // Filter allSentenceTargetWords (case-insensitive)
+        List<String> filteredAllWords = new ArrayList<String>();
+        for (String word : allSentenceTargetWords) {
+            if (word != null && !targetSet.contains(word.toLowerCase())) {
+                filteredAllWords.add(word);
+            }
+        }
+        String[] filteredWords = filteredAllWords.toArray(new String[filteredAllWords.size()]);
+
+        // Filter distractors if they exist (case-insensitive)
         if(sentenceDistractors != null){
-            subSelect.put("wrongWords", getSentenceWords(sentenceDistractors, null));
+            List<String> filteredDistractors = new ArrayList<String>();
+            for (String word : sentenceDistractors) {
+                if (word != null && !targetSet.contains(word.toLowerCase())) {
+                    filteredDistractors.add(word);
+                }
+            }
+            String[] filteredDistractorsArray = filteredDistractors.toArray(new String[filteredDistractors.size()]);
+            subSelect.put("wrongWords", getSentenceWords(filteredDistractorsArray, null));
+        } else {
+            subSelect.put("wrongWords", getSentenceWords(filteredWords, null));
         }
         /*
         
@@ -7134,7 +7170,8 @@ public class MYSQLUpload {
         sentence sent = (new sentence(tree.st.curr.names[i], null));
         subSelect.put("desktopSelectIndex", selectIndex);
         subSelect.put("sentence", u.formatTextforUpload(sent.stripclozereplacewildcard(),CURRENT_MODE));
-        subSelect.put("rightWords", getSentenceWords(getSentenceTargetWords(tree.st.curr.names[i], sentType, true), getSentenceTargetImages(tree.st.curr.names[i])));
+        
+        subSelect.put("rightWords", getSentenceWords(targetWords, getSentenceTargetImages(tree.st.curr.names[i])));
         String sentText = removeSentenceImageSuffix(tree.st.curr.names[i].toLowerCase().replace("|", " "));
         subSelect.put("soundPeep", tor.findJsonRecording(jsonRecResults, getSoundDatabaseForSentenceGame(tree, uploadType, false), sentText));
         if(uploadType == UPLOAD_TYPE_SENTENCES_SIMPLE){   
