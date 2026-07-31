@@ -1524,6 +1524,7 @@ ButtonGroup btgroup;
                 boolean wantHelicopterPipeHeadings = false;
                 String wantHelicopterPipeHeadingsTopics[] = new String[]{};
                 boolean wantShowPicPreferences = false;
+                boolean wantShowSentencesEndingWithFullStops = false;
                 
                 boolean standard = cbWLStandard.isSelected() || mode == MODE_JSON;
                 boolean extended = cbWLExtended.isSelected() ||  mode == MODE_JSON;
@@ -1614,8 +1615,8 @@ ButtonGroup btgroup;
                                 boolean startedSub = false;
                                 String[] sslines = new String[3];
                                 sslines[0] = st.curr.names[0];
-                                System.out.println("_______________________");
-                                System.out.println(st.curr.names[0]);
+  //                              System.out.println("_______________________");
+ //                               System.out.println(st.curr.names[0]);
                                 for (j = 1; j < st.curr.names.length; ++j) {
                                     
                                     
@@ -1903,6 +1904,15 @@ ButtonGroup btgroup;
                                      g = 0;
                                 }
                                 if(s.indexOf("Games:") < 0){
+                                    if(wantShowSentencesEndingWithFullStops){
+                                        if (isSimpleSentence || isNormalSentence)
+                                        {
+                                            if(s.endsWith(".")){
+                                                System.out.println(st.curr.names[0] + "     " + s);
+                                            }
+                                        }                                        
+                                    }
+
                                     if (simplecross && isSimpleSentence)//    (sent.type  == sentence.SIMPLECLOZE))
                                     {
                       //                  if (u.findString(simpleSentFullArray, s) < 0 && !badsentence) {
@@ -1938,20 +1948,19 @@ ButtonGroup btgroup;
                                             }
                                             
                                             */
-/*
-                                            ToolsOnlineResources tor = new ToolsOnlineResources();
-                                            String oriSent = st.curr.names[j];
-                                            String stripped = tor.stripPipes(st.curr.names[j]);
-                                            String pipesadded = tor.addPipes(stripped, 50);  
-                                            if(!oriSent.equals(pipesadded)){
-   //                                             System.out.println("-------------------changed");
-                                                st.curr.names[j] = pipesadded;  
-                                                db.update(topicTree.publictopics, topics[i].name, st.curr, db.TOPIC);                                                
-                                            }
-*/
-
-                  
-                     
+                                            if(ToolsOnlineResources.soundAuditStage1){
+                                                ToolsOnlineResources tor = new ToolsOnlineResources();
+                                                String oriSent = st.curr.names[j];
+                                                String stripped = tor.stripPipes(st.curr.names[j]);
+                                                String pipesadded = tor.addPipes(stripped, 50);  
+                                                if(!oriSent.equals(pipesadded)){
+                                                    System.out.println(oriSent);
+                                                    System.out.println(pipesadded);
+                                                    System.out.println("-------------------changed");
+                                                    st.curr.names[j] = pipesadded;  
+                                                    db.update(topicTree.publictopics, topics[i].name, st.curr, db.TOPIC);                                                
+                                                }
+                                            }              
 //                     System.out.println(s);
                     
                             // attempt to find specified distractore (blocks with more than one /)

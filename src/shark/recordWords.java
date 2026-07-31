@@ -533,17 +533,18 @@ public class recordWords  extends JPanel implements Runnable {
               System.out.println("deleted unused:  "+extrawords[ii]);
       }      
 */
-/*
-      // fill to-be-recorded words with dummy recording;
-      String skip[] = new String[] {"ar", "eu", "igh", "oe"};
-      for(int ii = 0; ii < notyetwords.length; ii++){
-          if(u.findString(skip, notyetwords[ii])>=0)
-              continue;
-          byte placeholder_sound[] = db.findwav("publicsent1", "placeholder_beep");
-          db.updatewav(soundDBName, notyetwords[ii], placeholder_sound);
-          System.out.println("added placeholder sound  "+notyetwords[ii]);
-      } 
-*/
+
+        if(ToolsOnlineResources.soundAuditStage2){
+            // fill to-be-recorded words with dummy recording;
+            String skip[] = new String[] {"ar", "eu", "igh", "oe"};
+            for(int ii = 0; ii < notyetwords.length; ii++){
+                if(u.findString(skip, notyetwords[ii])>=0)
+                    continue;
+                byte placeholder_sound[] = db.findwav("publicsent1", "placeholder_beep");
+                db.updatewav(soundDBName, notyetwords[ii], placeholder_sound);
+                System.out.println("added placeholder sound  "+notyetwords[ii]);
+            } 
+        }
       
       setnotyet2();
       notyet.setListData(notyetwords2);

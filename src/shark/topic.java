@@ -3644,9 +3644,14 @@ public word[] getAllWords(boolean extended, boolean excludeteachingnotes) {
                             else{
                        //     int ggg = mysqlup.doWordNew(wrds[ip], null, getTargetWithAnyPattern(wrds[ip].v(), (String[])headingPatterns.get(i)), mysqlup.t.mySQL_Topic_ID, null, new int[]{mysqlup.WORD_TYPE_PATTERNGAME});
 //                            if(u.findString(wordIDs, String.valueOf(ggg)) < 0)   don't strip out duplicates - mucks up Pattern
-                                if(u.findString(wordIDs, wrds[ip].v())<0)
-                                    wordIDs = u.addString(wordIDs, wrds[ip].v());
+                                boolean isSinglePhonicSound = wrds[ip].phonics && !wrds[ip].phonicsw;   
+                                // include the whole phonic string (with the =) for single phonic sounds - Ruth has introduced these in the "Spelling catch up for older users" course
+                                String wordString = isSinglePhonicSound ? wrds[ip].value : wrds[ip].v();
+                                if(u.findString(wordIDs, wordString)<0){
+                                    wordIDs = u.addString(wordIDs, wordString);
                                 }
+                                    
+                            }
  
                         }                        
                     }

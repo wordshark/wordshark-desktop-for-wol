@@ -104,9 +104,17 @@ public class ToolsOnlineResources {
     public static String pre_wordshark_images = "IWS";    
     public static String pre_photographs = "IPHOTO";   
     
-    
-//    static String TOBERECORDEDS3PATH= "temp/TEMP_ToBeRecorded.mp3";
-    
+    // automatic pipe setting in sentences
+    public static boolean soundAuditStage1 = false;
+
+    // automatically delete unused recordings from sound files
+    public static boolean soundAuditStage2 = false; 
+
+    // makeDummyRecordings
+    public static boolean soundAuditStage3 = false;
+ 
+    // print out for voice artists
+    public static boolean soundAuditStage4 = false;
     
     public static String[] maintainCasePrefixes = new String[]{pre_gameMessage, pre_system};
     
@@ -172,6 +180,14 @@ public class ToolsOnlineResources {
     String letterPatternHeadings = "letterPatternHeadings";
     String publicsay1 = "publicsay1";
     String publicsent1 = "publicsent1";
+    
+    
+    public static String publictopicsPrintPath = "C:\\jshark-shared\\publictopicsPrint\\";
+    public static String publictopicsRecordingsOutput = "C:\\jshark-shared\\publictopicsRecordingsOutput\\";
+    public static String dummyRecordingOutputPath = "D:\\DummyOutput";
+    
+    
+    public static String audioS3Path = "C:\\S3\\wordsharkaudio\\";
     
     
     public static String[] recordingFiles = new String[]{"gamerecordings", "publicsay1", "publicsay3", "publicsent1", "publicsent2", "publicsent3"};
@@ -566,7 +582,7 @@ non-words - put into a list as a pre_word suffix ending or letter pairs?  (!1)
         try {
             JSONObject json = (JSONObject)parser.parse(new FileReader("C:\\jshark-shared2\\publictopicsPrint\\topics.json"));
             jsonssent3 = (JSONArray) json.get(elements);
-            ff = new File("C:\\jshark-shared2\\publictopicsPrint\\"+target+".csv");
+            ff = new File(publictopicsPrintPath+target+".csv");
             csvRecmmendedOutput = new CsvWriter(new OutputStreamWriter(new FileOutputStream(ff), "windows-1252"), ',');        
             csvRecmmendedOutput.write("Sentence");
             csvRecmmendedOutput.write("Word list name");
@@ -1936,7 +1952,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         
         try {
             for(int i = 0; i < sprefixes.length; i++) {
-                JSONObject json = (JSONObject)parser.parse(new FileReader("C:\\jshark-shared2\\publictopicsPrint\\"+strMapping+sprefixes[i]+jsonext));
+                JSONObject json = (JSONObject)parser.parse(new FileReader(publictopicsPrintPath+strMapping+sprefixes[i]+jsonext));
                 JSONArray results = (JSONArray) json.get(elements); 
                 for(int j = 0; j < results.size(); j++) {   
                     JSONObject p = (JSONObject) results.get(j);
@@ -2272,8 +2288,7 @@ public void addPrefixesToImages(){
     
 
 public void makeDummyRecordings(){
-        String baseS3RecordingsFolder = "D:\\S3syncRecordings\\";
-        String dummyOutputFolder = "D:\\DummyOutput\\";
+        String dummyOutputFolder = dummyRecordingOutputPath+"\\";
         File dummySoundFile = new File("D:\\toberecorded.mp3");
         JSONParser parser = new JSONParser();
         try {
@@ -2285,7 +2300,7 @@ public void makeDummyRecordings(){
                 if(bn.equals("false"))continue;
                 String k = (String)p.get(s3key);
                 String kpc = k.replace("/", "\\");
-                if(!(new File(baseS3RecordingsFolder+kpc)).exists()){
+                if(!(new File(audioS3Path+kpc)).exists()){
                     String subfolder = k.substring(0, k.indexOf("/"));
                     try{
                         (new File(dummyOutputFolder+subfolder)).mkdirs();
@@ -2301,7 +2316,10 @@ public void makeDummyRecordings(){
         }        
         catch (Exception e) {
             e.printStackTrace();
-        }            
+        }    
+
+        int stop;
+        stop = 0;
     
 }
 
@@ -2466,7 +2484,7 @@ are not redundant)
         } catch (Exception e) {
             e.printStackTrace();
         }
-        jsonToHTMLRecordings("C:\\jshark-shared2\\publictopicsPrint\\", "C:\\jshark-shared2\\publictopicsPrint\\");
+        jsonToHTMLRecordings(publictopicsPrintPath, publictopicsPrintPath);
         int e;
         e = 9;
     }  
@@ -2658,7 +2676,8 @@ are not redundant)
 	                e.printStackTrace();
                     }        
       }                    
-                    
+      boolean stop;
+      stop = true;
                     
    }   
    
@@ -2666,6 +2685,7 @@ are not redundant)
    String substituteHtmlChars(String s){
        s = s.replace("⅕", "&#8533;");
        s = s.replace("⅗", "&#8535;");
+       s = s.replace("·", "&middot;");
        return s;
    }
  

@@ -2225,7 +2225,14 @@ JTextPane fasttpna;
     
   //  tor.renameWithZeros();
   //  tor.renameRuthRecordings();
-//    tor.makeDummyRecordings();
+
+    if(ToolsOnlineResources.soundAuditStage3){
+        tor.makeDummyRecordings();
+    }
+    if(ToolsOnlineResources.soundAuditStage4){
+        tor.jsonToHTMLRecordings(ToolsOnlineResources.publictopicsPrintPath, ToolsOnlineResources.publictopicsRecordingsOutput, ToolsOnlineResources.dummyRecordingOutputPath, false);
+    }    
+  
 //      tor.checkRecordings();
 int ht = 0;
  //   tor.compareJsonFiles("D:\\NetBeansProjects\\jbproject6_3\\Release\\Wordshark 6\\wordshark-public\\json\\recordings.json",
@@ -2279,7 +2286,6 @@ int ht = 0;
    int h;
     h =0;
  //   tor.textFilesToJason();
-//     tor.jsonToHTMLRecordings("C:\\jshark-shared\\publictopicsPrint\\", "C:\\jshark-shared2\\publictopicsPrint\\", "D:\\DummyOutput", false);
  //  tor.jsonImageToCsv();
    
   // System.out.println("test 1");

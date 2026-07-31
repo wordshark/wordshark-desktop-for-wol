@@ -321,7 +321,7 @@ public class MYSQLUpload {
     static int attributeIndexCount = -1;
     static final String SVGIMAGEFOLDER = PROJECT_PATH + "svg";
     static final String RESTXMLFOLDER = PROJECT_PATH + "XML\\restXML";
-    static final String RESTJSONFOLDER = PROJECT_PATH + "XML\\wordsXML";
+    static final String RESTJSONFOLDER = PROJECT_PATH + "json_output";
     
     
     static final String WORDSXMLFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\XML\\wordsXML";
@@ -777,8 +777,8 @@ public class MYSQLUpload {
         return ret;
     }
     
-     String apiGetAccessToken() {
-        apiConfig config = API_CONFIGS[currentEnvironment];
+     String apiGetAccessToken(int env) {
+        apiConfig config = API_CONFIGS[env];
         String ret = null;
         try {
             java.net.URL url = new java.net.URL(config.url + "oauth/token");
@@ -815,11 +815,11 @@ public class MYSQLUpload {
         return ret;
     }
      
-     int apiGetId(String urlPath, String jsonInputString) {
-        if(API_CONFIGS[currentEnvironment].accessToken == null){
-            setAccessToken();
+     int apiGetId(String urlPath, String jsonInputString, int env) {
+        if(API_CONFIGS[env].accessToken == null){
+            setAccessToken(env);
         } 
-        apiConfig config = API_CONFIGS[currentEnvironment];
+        apiConfig config = API_CONFIGS[env];
         JSONObject ret = null;
         try {
             java.net.URL url = new java.net.URL(urlPath);
@@ -864,13 +864,13 @@ public class MYSQLUpload {
         return -1;
     }
     
-    void setAccessToken(){
-        String accessToken = apiGetAccessToken();
+    void setAccessToken(int env){
+        String accessToken = apiGetAccessToken(env);
         if(accessToken==null){
             int h;
             h = 0; 
         }
-        API_CONFIGS[currentEnvironment].accessToken = accessToken;
+        API_CONFIGS[env].accessToken = accessToken;
     }
 
     public void StartUpload() {
@@ -972,7 +972,7 @@ public class MYSQLUpload {
             }
             
             ret = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/unit",
-                jsonObject.toString());   
+                jsonObject.toString(), currentEnvironment);   
         }
         else{
             s = uploadToService("http://localhost/so_uploadTopicHeading.php",
@@ -1773,6 +1773,18 @@ public class MYSQLUpload {
     }
 
     void doImagesUpload() {
+        currentEnvironment = ShowSelectEnvDialog();
+        int insertItemCount = imagesUploadAction(true);
+        boolean okToProceed = u.yesnomess(shark.programName, "About to update " + String.valueOf(insertItemCount) + " items. Proceed?" , sharkStartFrame.mainFrame);
+        if(okToProceed){
+           imagesUploadAction(false); 
+        }
+        u.okmess(shark.programName, "Finished upload", sharkStartFrame.mainFrame);
+    }
+        
+    int imagesUploadAction(boolean dummyRun) {
+        int counter = 0;
+        currentEnvironment = ShowSelectEnvDialog();
         try {
             for (int i = 0; i < jsonImageResults.size(); i++) {
                 JSONObject p = (JSONObject) jsonImageResults.get(i);
@@ -1810,37 +1822,47 @@ public class MYSQLUpload {
 
                 String ret = null;
                 int k = -1;
-                try {
-                    ret = uploadToService("http://localhost/so_uploadImage.php",
-                            new String[]{"type", "word",
-                                "filename", "s3key", "is_vocab", "is_animated"},
-                            new String[]{strType, u.formatTextforUpload(imword, CURRENT_MODE), strFileName, strS3key, strIsVocab, strIsAnimated});
-                    if (ret.startsWith("Error:")) {
-                        int gg;
-                        gg = 9;
-                        return;
-                    }
-                    k = Integer.parseInt(ret);
-                } catch (Exception e) {
-                    int ff;
-                    ff = 99;
+
+                if(CURRENT_MODE == MODE_DIRECT){
+                    
+                    if(!(new File(ToolsOnlineResources.audioS3Path+p.get(ToolsOnlineResources.s3key))).exists()){
+                        counter++;
+                        if(!dummyRun){
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("type", strType);
+                            jsonObject.put("word", u.formatTextforUpload(imword, CURRENT_MODE));
+                            jsonObject.put("filename", strFileName);
+                            jsonObject.put("s3key", strS3key);
+                            jsonObject.put("is_vocab", Boolean.parseBoolean(strIsVocab));
+                            jsonObject.put("is_animated", Boolean.parseBoolean(strIsAnimated));
+
+                            apiGetId(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment);             
+                        }
+                    }                    
                 }
-
-                // String strIsVocab = (String)p.get(ToolsOnlineResources.vocab);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        return counter;
     }
 
     void doRecordingsUpload() {
+        currentEnvironment = ShowSelectEnvDialog();
+        int insertItemCount = recordingsUploadAction(true);
+        boolean okToProceed = u.yesnomess(shark.programName, "About to update " + String.valueOf(insertItemCount) + " items. Proceed?" , sharkStartFrame.mainFrame);
+        if(okToProceed){
+           recordingsUploadAction(false); 
+        }
+        u.okmess(shark.programName, "Finished upload", sharkStartFrame.mainFrame);
+    }
+    
+    
+    int recordingsUploadAction(boolean dummyRun) {
+        int counter = 0;
         try {
             for (int i = 0; i < jsonRecResults.size(); i++) {
-
                 JSONObject p = (JSONObject) jsonRecResults.get(i);
-
                 String currUsed = (String) p.get(ToolsOnlineResources.currentlyUsed);
                 if (currUsed != null && currUsed.equals("false")) {
                     continue;
@@ -1873,31 +1895,30 @@ public class MYSQLUpload {
                 word w = new word(strDesktopName, "publictopics");
                 String ret = null;
                 int k = -1;
-                try {
-                    ret = uploadToService("http://localhost/so_uploadSound.php",
-                            new String[]{"type", "word",
-                                "filename", "s3key", "is_vocab"},
-                            new String[]{strType, u.formatTextforUpload(getStrippedSoundName(strDesktopName), CURRENT_MODE), strFileName, strS3key, strIsVocab});
-                    if (ret.startsWith("Error:")) {
-                        int gg;
-                        gg = 9;
-                        System.out.println(ret);
-                        return;
+                
+                if(CURRENT_MODE == MODE_DIRECT){
+                    if(!(new File(ToolsOnlineResources.audioS3Path+p.get(ToolsOnlineResources.s3key))).exists()){
+                        counter++;
+                        if(!dummyRun){
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("type", strType);
+                            jsonObject.put("word", u.formatTextforUpload(getStrippedSoundName(strDesktopName), CURRENT_MODE));
+                            jsonObject.put("filename", strFileName);
+                            jsonObject.put("s3key", strS3key);
+                            jsonObject.put("isVocab", Boolean.parseBoolean(strIsVocab));
+
+                            apiGetId(API_CONFIGS[currentEnvironment].url + "sounds", jsonObject.toString(), currentEnvironment);                
+                        }
                     }
-                    k = Integer.parseInt(ret);
-                } catch (Exception e) {
-                    int ff;
-                    ff = 99;
-                    System.out.println(e.getMessage());
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-        int g;
-        g = 0;
+        return counter;
     }
+    
+    
 
     void doTopicsPrint(topicTree topicTreeList) {
 
@@ -1966,7 +1987,7 @@ public class MYSQLUpload {
         }
         if (sscourses.length != ALL_COURSES.length) {
             u.okmess(shark.programName + " Bad Courses", "Wrong number of courses", sharkStartFrame.mainFrame);
-            return;
+ //           return;
         }
         String ssproblemcourses[] = new String[]{};
         for (int ic = 0; ic < ALL_COURSES.length; ic++) {
@@ -3149,7 +3170,7 @@ public class MYSQLUpload {
                     wordlistDoneCount++;
                     writeJson(t.name, postJsonObject.toJSONString());
                     int g = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/wordlist",
-                        postJsonObject.toString());
+                        postJsonObject.toString(), currentEnvironment);
                     lasttopicindex++;
                     System.out.println("....Finished: " + String.valueOf(g) + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
                 }
@@ -3157,7 +3178,7 @@ public class MYSQLUpload {
         }
         
         String str = String.valueOf(java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(Calendar.getInstance().getTimeInMillis() - portStartTime));
-        int res = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/"+currCourseVersion+"/activate", null);
+        int res = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/"+currCourseVersion+"/activate", null, currentEnvironment);
         if(Integer.parseInt(currCourseVersion) == res){
             u.okmess(shark.programName, "Successfully finished in : " + str + " minutes.", sharkStartFrame.mainFrame);        
         }
