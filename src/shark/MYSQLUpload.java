@@ -1833,8 +1833,8 @@ public class MYSQLUpload {
                             jsonObject.put("word", u.formatTextforUpload(imword, CURRENT_MODE));
                             jsonObject.put("filename", strFileName);
                             jsonObject.put("s3key", strS3key);
-                            jsonObject.put("is_vocab", Boolean.parseBoolean(strIsVocab));
-                            jsonObject.put("is_animated", Boolean.parseBoolean(strIsAnimated));
+                            jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
+                            jsonObject.put("IsAnimated", Boolean.parseBoolean(strIsAnimated));
 
                             apiGetId(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment);             
                         }
@@ -1905,7 +1905,7 @@ public class MYSQLUpload {
                             jsonObject.put("word", u.formatTextforUpload(getStrippedSoundName(strDesktopName), CURRENT_MODE));
                             jsonObject.put("filename", strFileName);
                             jsonObject.put("s3key", strS3key);
-                            jsonObject.put("isVocab", Boolean.parseBoolean(strIsVocab));
+                            jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
 
                             apiGetId(API_CONFIGS[currentEnvironment].url + "sounds", jsonObject.toString(), currentEnvironment);                
                         }
