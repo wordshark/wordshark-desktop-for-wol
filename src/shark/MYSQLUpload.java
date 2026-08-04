@@ -41,6 +41,9 @@ import shark.games.snakesandladders;
 
 import java.net.HttpURLConnection;
 import java.text.*;
+
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 /**
  *
  * @author paulr
@@ -236,30 +239,24 @@ public class MYSQLUpload {
 
     final static String COURSE_WORDSHARK = "Wordshark course";
     final static String COURSE_SUPPLEMENTARY_LISTS = "Supplementary lists";
-    final static String COURSE_LETTERS_AND_SOUNDS = "'Letters and Sounds'";
     final static String COURSE_NAT_CURRICULUM = "English National Curriculum: spellings";
-    final static String COURSE_NC_PHONIC_SCREEN = "NC Year 1 Phonics screen";
     final static String COURSE_ALPHA_TO_OMEGA = "'Alpha to Omega'";
     final static String COURSE_EVERYDAY_VOCAB = "Everyday vocabulary";
     final static String COURSE_SECONDARY_SUBJECT = "Secondary school subject lists";
-    final static String COURSE_ALPHABET = "Alphabet and dictionary course";
     final static String COURSE_HFW = "High Frequency Words (HFW)";
     final static String COURSE_WORDSHARK_TEST = "Wordshark course test";
-    final static String COURSE_DEV_TEST = "DevTest";
+    final static String COURSE_SPELLING_CATCH_UP = "Spelling catch up for older users";
 
     final static String[] ALL_COURSES = new String[]{
         COURSE_WORDSHARK,
         COURSE_SUPPLEMENTARY_LISTS,
-        COURSE_LETTERS_AND_SOUNDS,
         COURSE_NAT_CURRICULUM,
-        COURSE_NC_PHONIC_SCREEN,
         COURSE_ALPHA_TO_OMEGA,
         COURSE_EVERYDAY_VOCAB,
         COURSE_SECONDARY_SUBJECT,
-        COURSE_ALPHABET,
         COURSE_HFW,
         COURSE_WORDSHARK_TEST,
-        COURSE_DEV_TEST
+        COURSE_SPELLING_CATCH_UP
     };
 
     static String apiCalls[] = new String[0];
@@ -814,7 +811,7 @@ public class MYSQLUpload {
         }
         return ret;
     }
-     
+       
      int apiGetId(String urlPath, String jsonInputString, int env) {
         if(API_CONFIGS[env].accessToken == null){
             setAccessToken(env);
@@ -864,6 +861,36 @@ public class MYSQLUpload {
         return -1;
     }
     
+    boolean apiHead(String urlPath, int env) {
+        if(API_CONFIGS[env].accessToken == null){
+            setAccessToken(env);
+        } 
+        apiConfig config = API_CONFIGS[env];
+        try {
+            java.net.URL url = new java.net.URL(urlPath);
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("Accept", "application/json");
+            con.setRequestProperty("Authorization", "Bearer " + config.accessToken);
+            con.setRequestMethod("HEAD");
+            con.setDoOutput(true);
+
+            // Check response code FIRST
+            int responseCode = con.getResponseCode();
+            if(responseCode == 200){
+                return true;
+            }
+            return false;
+
+        } catch (Exception rr) {
+            u.okmess(shark.programName, "Failed: " + rr.getMessage());
+        }
+        u.okmess(shark.programName, "Failed");
+        System.exit(0);
+        return false;
+    }  
+     
+     
     void setAccessToken(int env){
         String accessToken = apiGetAccessToken(env);
         if(accessToken==null){
@@ -1877,8 +1904,7 @@ public class MYSQLUpload {
                 }
                 String strDesktopName = (String) p.get(ToolsOnlineResources.desktopName);
 
-                System.out.println(strDesktopName);
-
+                
                 String strIsVocab = (String) p.get(ToolsOnlineResources.vocab);
                 String strFileName = strS3key.substring(j + sep.length());
                 if (!strFileName.endsWith(".mp3")) {
@@ -1897,7 +1923,14 @@ public class MYSQLUpload {
                 int k = -1;
                 
                 if(CURRENT_MODE == MODE_DIRECT){
-                    if(!(new File(ToolsOnlineResources.audioS3Path+p.get(ToolsOnlineResources.s3key))).exists()){
+                    String s3Key = (String)p.get(ToolsOnlineResources.s3key);
+                    boolean keyExistsInDatabase = checkS3KeyExistsInDatabase(s3Key, "sounds");
+                    boolean keyExistsInS3 = new File(ToolsOnlineResources.audioS3Path+s3Key).exists();    
+                    if (!keyExistsInDatabase) {
+                        System.out.println(s3Key);
+                        if(!keyExistsInS3){
+                            System.out.println(s3Key + "doesn't exist in S3");
+                        }
                         counter++;
                         if(!dummyRun){
                             JSONObject jsonObject = new JSONObject();
@@ -1918,8 +1951,21 @@ public class MYSQLUpload {
         return counter;
     }
     
-    
+    String urlEncodeS3Key(String key){
+        String encoded = null;
+        try{
+            encoded = URLEncoder.encode(key, "UTF-8");
+        } catch(UnsupportedEncodingException e){
+            e.printStackTrace();
+        }
+        return encoded;
+    }
 
+    boolean checkS3KeyExistsInDatabase(String key, String resourceRouteString){
+        String urlEncodedS3Key = urlEncodeS3Key(key);
+        return apiHead(API_CONFIGS[currentEnvironment].url + resourceRouteString + "/check?s3key="+urlEncodedS3Key, currentEnvironment);
+    }
+    
     void doTopicsPrint(topicTree topicTreeList) {
 
         mgcoursetree.publicname = sharkStartFrame.mainFrame.publicMarkGamesCoursesLib[0];
@@ -1985,10 +2031,10 @@ public class MYSQLUpload {
                 sscourses = u.addString(sscourses, nodename);
             }
         }
-        if (sscourses.length != ALL_COURSES.length) {
-            u.okmess(shark.programName + " Bad Courses", "Wrong number of courses", sharkStartFrame.mainFrame);
+ //       if (sscourses.length != ALL_COURSES.length) {
+ //           u.okmess(shark.programName + " Bad Courses", "Wrong number of courses", sharkStartFrame.mainFrame);
  //           return;
-        }
+ //       }
         String ssproblemcourses[] = new String[]{};
         for (int ic = 0; ic < ALL_COURSES.length; ic++) {
             if (u.findString(sscourses, ALL_COURSES[ic]) < 0) {

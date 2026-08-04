@@ -3646,7 +3646,7 @@ public word[] getAllWords(boolean extended, boolean excludeteachingnotes) {
 //                            if(u.findString(wordIDs, String.valueOf(ggg)) < 0)   don't strip out duplicates - mucks up Pattern
                                 boolean isSinglePhonicSound = wrds[ip].phonics && !wrds[ip].phonicsw;   
                                 // include the whole phonic string (with the =) for single phonic sounds - Ruth has introduced these in the "Spelling catch up for older users" course
-                                String wordString = isSinglePhonicSound ? wrds[ip].value : wrds[ip].v();
+                                String wordString = isSinglePhonicSound || wrds[ip].isNonsense() ? wrds[ip].value : wrds[ip].v();
                                 if(u.findString(wordIDs, wordString)<0){
                                     wordIDs = u.addString(wordIDs, wordString);
                                 }

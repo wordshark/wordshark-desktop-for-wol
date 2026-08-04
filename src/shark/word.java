@@ -82,6 +82,17 @@ public class word {
   public boolean split() {
     return (value.indexOf('=') < 0 && value.indexOf('/') >= 0);
   }
+  public boolean isNonsense() {
+    if(value.endsWith("!")){
+        return true;
+    }
+    int i;
+    if((i=value.indexOf('=')) > 0 && value.substring(0,i).endsWith("!")){
+        return true;
+    }
+    return false;
+  } 
+  
   public String toString() {return vsplit();}
   public String v() {  //   return normal string
     short i;

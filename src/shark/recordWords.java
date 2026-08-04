@@ -71,6 +71,7 @@ public class recordWords  extends JPanel implements Runnable {
    String deleteText = deleteWord.getText();
    JButton exitbutton = u.Button("rec_exit");
    JButton beepbutton = u.Button("rec_beep");
+   JButton placeholderButton = u.Button("rec_placeholder");
    JButton rembeepbutton = u.Button("rec_rembeep");
    JLabel oldsound = u.label("rec_oldsound");
    JLabel newsound = u.label("rec_newsound");
@@ -737,6 +738,7 @@ public class recordWords  extends JPanel implements Runnable {
 //      panel4.add(listen,grid1);
       panel4.add(ignore,grid1);
       panel4.add(prevWord2,grid1);
+      panel4.add(placeholderButton,grid1);
       panel4.add(deleteWord,grid1);
       panel4.add(whattopic,grid1);
       panel4.add(exitbutton,grid1);
@@ -1005,6 +1007,19 @@ grid1.insets = new Insets(0,0,0,0);
             sharkStartFrame.mainFrame.setupgames();
          }
       });
+      placeholderButton.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            if(currword != null){
+                byte placeholder_sound[] = db.findwav("publicsent1", "placeholder_beep");
+                db.updatewav(soundDBName, currword, placeholder_sound);
+                savenewword(currword); 
+                nextwordfromlist();
+                               
+                setButtons();
+            }
+            requestFocus();
+         }
+      });
       beepbutton.addActionListener(new java.awt.event.ActionListener() {
          public void actionPerformed(ActionEvent e) {
 //startPR2004-09-01^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^PR
@@ -1251,6 +1266,7 @@ grid1.insets = new Insets(0,0,0,0);
                               startRecording.setText(startText4);
       else               startRecording.setText(startText1);
       whattopic.setEnabled(currword != null && currword.length() > 0);
+      placeholderButton.setEnabled(currword != null && currword.length() > 0);
 
       ignore.setEnabled(isnextwordfromlist());
       if(isNewWord) ignore.setText(ignoreText1);

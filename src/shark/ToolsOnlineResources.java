@@ -373,8 +373,8 @@ public class ToolsOnlineResources {
     static String fileSentenceOutput = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"sentence"+txtext;    // contains sentences wanted, and letter pattern headings wanted.
     static String fileDummyRecordings = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"dummyRecordings"+txtext; // dummy files of 'ToBeRecorded' need to be produced for these recordings
   
-         String imageIWSPoolPath = "D:\\S3syncImages\\iws";
-      static  String photoPoolPath = "D:\\Dropbox\\PhotosMatchedResources";
+    String imageIWSPoolPath = "C:\\S3\\wordsharkimages\\iws";
+    static  String photoPoolPath = "C:\\Users\\PaulRubie\\Dropbox\\PhotosMatchedResources";
     
     static String fileRecordingsBase = "C:\\Recordings\\";
     static String fileRecordingsSubFolderFiles = "Files\\";
