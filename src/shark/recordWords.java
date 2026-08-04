@@ -524,18 +524,19 @@ public class recordWords  extends JPanel implements Runnable {
          System.arraycopy(alreadywords,j,ss,extrawords.length,alreadywords.length-j);
          extrawords = ss;
       }
-/*
-      // remove recorded, not used words;
-      for(int ii = 0; ii < extrawords.length; ii++){
-              if(soundDBName.equals("publicsay1") && extrawords[ii].indexOf("hello")>=0 || extrawords[ii].indexOf("_")>=0){
-                  continue;
-              }
-              db.delete(soundDBName, extrawords[ii], db.WAV);
-              System.out.println("deleted unused:  "+extrawords[ii]);
-      }      
-*/
+      
+      if(ToolsOnlineResources.soundAuditDeleteRecordings){
+        // remove recorded, not used words;
+        for(int ii = 0; ii < extrawords.length; ii++){
+                if(soundDBName.equals("publicsay1") && extrawords[ii].indexOf("hello")>=0 || extrawords[ii].indexOf("_")>=0){
+                    continue;
+                }
+                db.delete(soundDBName, extrawords[ii], db.WAV);
+                System.out.println("deleted unused:  "+extrawords[ii]);
+        }      
+      }
 
-        if(ToolsOnlineResources.soundAuditStage2){
+        if(ToolsOnlineResources.soundAuditFillRecordings){
             // fill to-be-recorded words with dummy recording;
             String skip[] = new String[] {"ar", "eu", "igh", "oe"};
             for(int ii = 0; ii < notyetwords.length; ii++){

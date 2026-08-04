@@ -1948,7 +1948,7 @@ ButtonGroup btgroup;
                                             }
                                             
                                             */
-                                            if(ToolsOnlineResources.soundAuditStage1){
+                                            if(ToolsOnlineResources.soundAuditDoPipesInSentences){
                                                 ToolsOnlineResources tor = new ToolsOnlineResources();
                                                 String oriSent = st.curr.names[j];
                                                 String stripped = tor.stripPipes(st.curr.names[j]);

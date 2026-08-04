@@ -2226,10 +2226,10 @@ JTextPane fasttpna;
   //  tor.renameWithZeros();
   //  tor.renameRuthRecordings();
 
-    if(ToolsOnlineResources.soundAuditStage3){
+    if(ToolsOnlineResources.soundAuditMakeDummyRecordings){
         tor.makeDummyRecordings();
     }
-    if(ToolsOnlineResources.soundAuditStage4){
+    if(ToolsOnlineResources.soundAuditPrintOutForVoiceArtists){
         tor.jsonToHTMLRecordings(ToolsOnlineResources.publictopicsPrintPath, ToolsOnlineResources.publictopicsRecordingsOutput, ToolsOnlineResources.dummyRecordingOutputPath, false);
     }    
   

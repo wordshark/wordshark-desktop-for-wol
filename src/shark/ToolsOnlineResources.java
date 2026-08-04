@@ -105,24 +105,30 @@ public class ToolsOnlineResources {
     public static String pre_photographs = "IPHOTO";   
     
     // automatic pipe setting in sentences
-    public static boolean soundAuditStage1 = false;
+    public static boolean soundAuditDoPipesInSentences = false;
 
+    // automatically add beep sounds to required recordings
+    public static boolean soundAuditFillRecordings = false;    
+    
     // automatically delete unused recordings from sound files
-    public static boolean soundAuditStage2 = false; 
-
+    public static boolean soundAuditDeleteRecordings = false;
+    
+    // Do generate the new recordings json here, and move the files to public\json
+    
     // makeDummyRecordings
-    public static boolean soundAuditStage3 = false;
+    public static boolean soundAuditMakeDummyRecordings = false;
  
     // print out for voice artists
-    public static boolean soundAuditStage4 = false;
+    public static boolean soundAuditPrintOutForVoiceArtists = false;
     
     public static String[] maintainCasePrefixes = new String[]{pre_gameMessage, pre_system};
     
+    // Do recordings upload here - Make sure new recordings have been added to local S3
     
     
     int maxChars = 20;
     String sprefixes[] = new String[]{
-        pre_word, 
+        pre_word,
         pre_phonicSound, 
         pre_phonicSyllable, 
         pre_nonWord, 
@@ -1187,12 +1193,12 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         String createWordsharks[] = new String[]{};
         String createPhotos[] = new String[]{};
         //get file ids of Wordshark images
-        String ssFileIDs[] = new String[]{};
-        String[] ssFilePaths = new String[]{};
+        String[] iwsS3FileIDs = new String[]{};
+        String[] iwsS3FilePaths = new String[]{};
         File listPublicImageFiles[] =  new File(imageIWSPoolPath).listFiles();
         for(int i = 0; i < listPublicImageFiles.length; i++) {
-            ssFileIDs = u.addString(ssFileIDs, getImageFileID(listPublicImageFiles[i].getAbsolutePath()));
-            ssFilePaths = u.addString(ssFilePaths, listPublicImageFiles[i].getAbsolutePath());
+            iwsS3FileIDs = u.addString(iwsS3FileIDs, getImageFileID(listPublicImageFiles[i].getAbsolutePath()));
+            iwsS3FilePaths = u.addString(iwsS3FilePaths, listPublicImageFiles[i].getAbsolutePath());
         }        
    
         JSONParser parser = new JSONParser();
@@ -1206,6 +1212,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
             int h; 
             h = 0;
         }
+        // copy previous json, set all to unused. get the names in ssOnlineMinusExt
         for(int i = 0; i < prevRecResults.size(); i++) {
             JSONObject p = (JSONObject) prevRecResults.get(i);
             String onlinename = (String)p.get(onlineName);
@@ -1214,9 +1221,9 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                 onlinename = onlinename.substring(0, kk);
             }
             if(!firstEverRun) {
-            if(u.findString(ssOnlineMinusExt, onlinename)>=0){
-            }
-                ssOnlineMinusExt = u.addString(ssOnlineMinusExt, onlinename);
+                if(u.findString(ssOnlineMinusExt, onlinename)<0){
+                    ssOnlineMinusExt = u.addString(ssOnlineMinusExt, onlinename);
+                }
             }
             
             p.put(currentlyUsed,"false"); 
@@ -1224,7 +1231,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         }                
         JSONArray arrayElementOneArray = (JSONArray)prevRecResults.clone();
         
-        // do the Wordshark images
+        // loop through the publicimage images - get ID
         String pref = pre_wordshark_images+"_";  
         for(int k = 0; k < dbs.length; k++) {
             String listPublicImage[] =  db.list(dbs[k], db.IMAGE);
@@ -1240,40 +1247,39 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                     g = 0;
                 }                
                 // temporary first time look up
-                if(firstEverRun){
-                    int id2 = findJsonIndex(arrayElementOneArray, 
-                            new String[]{desktopName, database, isWordshark, animated, currentlyUsed}, 
-                            new String[]{details[DETAILS_NAME], dbs[k], "1", details[DETAILS_ISANIMATED], "false"});
-                    if(id2>=0){
-                        JSONObject p = (JSONObject) arrayElementOneArray.get(id2);
-                        // check to see if old image and new have same isAnimated - if not, ignore.
-                        String isAnim = (String)p.get(animated);
-                        if(isAnim.equals(details[DETAILS_ISANIMATED])){
-                            String onName = (String)p.get(onlineName);
-                            String str = onName.substring(0, onName.lastIndexOf("."));
-                            ssOnlineMinusExt = u.addString(ssOnlineMinusExt,  str);
-                            p.put(currentlyUsed, "true");
-                            p.put(sharkImageID, details[DETAILS_ID]);
-                            p.put(fileID, getImageFileID(imageIWSPoolPath+"\\"+onName));
-                            arrayElementOneArray.set(id2, p);
-           //                 System.out.println("Wordshark image found, FIRST RUN: "+sname);
-                            continue innerloop;
-                        }
-                    } 
-                    System.out.println("Wordshark image NOT FOUND IN FIRST RUN: "+details[DETAILS_NAME]);
-                }                
+//                if(firstEverRun){
+//                    int id2 = findJsonIndex(arrayElementOneArray, 
+//                            new String[]{desktopName, database, isWordshark, animated, currentlyUsed}, 
+//                            new String[]{details[DETAILS_NAME], dbs[k], "1", details[DETAILS_ISANIMATED], "false"});
+//                    if(id2>=0){
+//                        JSONObject p = (JSONObject) arrayElementOneArray.get(id2);
+//                        // check to see if old image and new have same isAnimated - if not, ignore.
+//                        String isAnim = (String)p.get(animated);
+//                        if(isAnim.equals(details[DETAILS_ISANIMATED])){
+//                            String onName = (String)p.get(onlineName);
+//                            String str = onName.substring(0, onName.lastIndexOf("."));
+//                            ssOnlineMinusExt = u.addString(ssOnlineMinusExt,  str);
+//                            p.put(currentlyUsed, "true");
+//                            p.put(sharkImageID, details[DETAILS_ID]);
+//                            p.put(fileID, getImageFileID(imageIWSPoolPath+"\\"+onName));
+//                            arrayElementOneArray.set(id2, p);
+//           //                 System.out.println("Wordshark image found, FIRST RUN: "+sname);
+//                            continue innerloop;
+//                        }
+//                    } 
+//                    System.out.println("Wordshark image NOT FOUND IN FIRST RUN: "+details[DETAILS_NAME]);
+//                }    
                 int id = findJsonIndex(arrayElementOneArray, 
                         new String[]{desktopName, sharkImageID, currentlyUsed, isWordshark}, 
                         new String[]{details[DETAILS_NAME], details[DETAILS_ID], "false", "1"});
-                // is there a previous record based on sharkImageID
+                // If the details for the publicimage image are the same as they are in the previous json
                 if(id>=0){
                     JSONObject p = (JSONObject) arrayElementOneArray.get(id);
                     String fileid = (String)p.get(fileID); 
-                    // is there a file id?
                     if(fileid != null){
-                        int ind = u.findString(ssFileIDs, fileid);
-                        // use details
-                        if(ind >= 0 && new File(ssFilePaths[ind]).exists()){
+                        int ind = u.findString(iwsS3FileIDs, fileid);
+                        // update the json setting currentlyUsed to true and set online name
+                        if(ind >= 0 && new File(iwsS3FilePaths[ind]).exists()){
                             p.put(currentlyUsed,"true");
                             String onName = (String)p.get(onlineName);
                             String str = onName.substring(0, onName.lastIndexOf("."));
@@ -1283,7 +1289,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                             continue innerloop;
                         }  
                         else{
-                            System.out.println("Wordshark image. File doesn't exist:   "+ (ind>=0?ssFilePaths[ind]:(String)p.get(desktopName)) );
+                            System.out.println("Wordshark image. File doesn't exist:   "+ (ind>=0?iwsS3FilePaths[ind]:(String)p.get(desktopName)) );
                         }
                     }   
                 }
@@ -1302,11 +1308,11 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                 int id = findJsonIndex(arrayElementOneArray, 
                         new String[]{desktopName, sharkImageID, currentlyUsed, isWordshark}, 
                         new String[]{details[DETAILS_NAME], details[DETAILS_ID], "true", "1"});
-                // skip past those that have been dealt with above
+                // Skip past those that have been dealt with above
                 if(id>=0){
                     continue;
                 }
-                // first run - new image - not found - don't want to continue becuase it needs to be added to json
+                // first run - new image - not found - don't want to cowntinue becuase it needs to be added to json
                 // if it was in previous, found - do want to contiue, othetwise end up with double
                 
                  // currentlyused worry
@@ -1346,28 +1352,28 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
             String details[];
             if((details = saveAllImages_GetPhotoDetails(listPublicImageFiles[i]))==null)continue;              
             // FIRST time only look in previous results and see if there's a match of desktopName and isWordshark=false and animated
-            if(firstEverRun){
-                if(details[DETAILS_NAME].equalsIgnoreCase("finish")){
-                    int g; 
-                    g = 0;
-                }                 
-                int id = findJsonIndex(arrayElementOneArray, 
-                        new String[]{desktopName, isWordshark, animated, currentlyUsed}, 
-                        new String[]{details[DETAILS_NAME], "0", details[DETAILS_ISANIMATED], "false"});
-                if(id>=0){
-                    // if match - use
-                    JSONObject p = (JSONObject) arrayElementOneArray.get(id);   
-                    String onName = (String)p.get(onlineName);
-                    String str = onName.substring(0, onName.lastIndexOf("."));
-                    ssOnlineMinusExt = u.addString(ssOnlineMinusExt,  str);
-                    p.put(currentlyUsed,"true");
-                    p.put(fileID, details[DETAILS_ID]);
-                    arrayElementOneArray.set(id, p);
-     //               System.out.println("Photo image found, FIRST RUN: "+fileName);
-                    continue;
-                }    
-                System.out.println("Photo image NOT FOUND IN FIRST RUN: "+details[DETAILS_NAME]);
-            }
+//            if(firstEverRun){
+//                if(details[DETAILS_NAME].equalsIgnoreCase("finish")){
+//                    int g; 
+//                    g = 0;
+//                }                 
+//                int id = findJsonIndex(arrayElementOneArray, 
+//                        new String[]{desktopName, isWordshark, animated, currentlyUsed}, 
+//                        new String[]{details[DETAILS_NAME], "0", details[DETAILS_ISANIMATED], "false"});
+//                if(id>=0){
+//                    // if match - use
+//                    JSONObject p = (JSONObject) arrayElementOneArray.get(id);   
+//                    String onName = (String)p.get(onlineName);
+//                    String str = onName.substring(0, onName.lastIndexOf("."));
+//                    ssOnlineMinusExt = u.addString(ssOnlineMinusExt,  str);
+//                    p.put(currentlyUsed,"true");
+//                    p.put(fileID, details[DETAILS_ID]);
+//                    arrayElementOneArray.set(id, p);
+//     //               System.out.println("Photo image found, FIRST RUN: "+fileName);
+//                    continue;
+//                }    
+//                System.out.println("Photo image NOT FOUND IN FIRST RUN: "+details[DETAILS_NAME]);
+//            }
             // look for match of fileID and desktopName
             int id = findJsonIndex(arrayElementOneArray, 
                 new String[]{fileID, desktopName, currentlyUsed}, 
