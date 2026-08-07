@@ -2231,9 +2231,10 @@ JTextPane fasttpna;
     }
     if(ToolsOnlineResources.soundAuditPrintOutForVoiceArtists){
         tor.jsonToHTMLRecordings(ToolsOnlineResources.publictopicsPrintPath, ToolsOnlineResources.publictopicsRecordingsOutput, ToolsOnlineResources.dummyRecordingOutputPath, false);
-    }    
-  
-//      tor.checkRecordings();
+    }
+    
+  //tor.verifyImages();
+
 int ht = 0;
  //   tor.compareJsonFiles("D:\\NetBeansProjects\\jbproject6_3\\Release\\Wordshark 6\\wordshark-public\\json\\recordings.json",
  //           "D:\\Dropbox\\Online Masters\\Builder Database Tables\\history\\Wordshark Test\\2019-01-29_wt00002_68\\json\\recordings.json"

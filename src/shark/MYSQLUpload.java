@@ -1811,7 +1811,6 @@ public class MYSQLUpload {
         
     int imagesUploadAction(boolean dummyRun) {
         int counter = 0;
-        currentEnvironment = ShowSelectEnvDialog();
         try {
             for (int i = 0; i < jsonImageResults.size(); i++) {
                 JSONObject p = (JSONObject) jsonImageResults.get(i);
@@ -1821,7 +1820,7 @@ public class MYSQLUpload {
                 String strIsAnimated = (String) p.get(ToolsOnlineResources.animated);
                 String currUsed = (String) p.get(ToolsOnlineResources.currentlyUsed);
                 if (currUsed != null && currUsed.equals("false")) {
-                    continue;
+//                    continue;
                 }
 
                 String sep = "/";
@@ -1851,21 +1850,31 @@ public class MYSQLUpload {
                 int k = -1;
 
                 if(CURRENT_MODE == MODE_DIRECT){
+                    String s3Key = (String)p.get(ToolsOnlineResources.s3key);
+                    boolean keyExistsInDatabase = checkS3KeyExistsInDatabase(s3Key, "images");
                     
-                    if(!(new File(ToolsOnlineResources.audioS3Path+p.get(ToolsOnlineResources.s3key))).exists()){
+                    
+                    if(!keyExistsInDatabase){
+                        System.out.println(s3Key + "doesn't exist in DATABASE");
+                    }
+                    
+                    boolean keyExistsInS3 = new File(ToolsOnlineResources.imagesS3Path+s3Key).exists();    
+                    if (!keyExistsInDatabase) {
+                        System.out.println(s3Key);
+                        if(!keyExistsInS3){
+                            System.out.println(s3Key + "doesn't exist in S3");
+                        }
                         counter++;
                         if(!dummyRun){
                             JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("type", strType);
-                            jsonObject.put("word", u.formatTextforUpload(imword, CURRENT_MODE));
+                            jsonObject.put("word", u.formatTextforUpload(getStrippedSoundName(strDesktopName), CURRENT_MODE));
                             jsonObject.put("filename", strFileName);
                             jsonObject.put("s3key", strS3key);
                             jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
-                            jsonObject.put("IsAnimated", Boolean.parseBoolean(strIsAnimated));
 
-                            apiGetId(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment);             
+                            apiGetId(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment); 
                         }
-                    }                    
+                    }   
                 }
             }
         } catch (Exception e) {

@@ -125,6 +125,8 @@ public class ToolsOnlineResources {
     
     // Do recordings upload here - Make sure new recordings have been added to local S3
     
+    // check image with verifyImages()
+    
     
     int maxChars = 20;
     String sprefixes[] = new String[]{
@@ -194,6 +196,7 @@ public class ToolsOnlineResources {
     
     
     public static String audioS3Path = "C:\\S3\\wordsharkaudio\\";
+    public static String imagesS3Path = "C:\\S3\\wordsharkimages\\";
     
     
     public static String[] recordingFiles = new String[]{"gamerecordings", "publicsay1", "publicsay3", "publicsent1", "publicsent2", "publicsent3"};
@@ -364,23 +367,25 @@ public class ToolsOnlineResources {
     static String readPrevJsonRecording = sharkStartFrame.publicPathplus+jsonFolder+shark.sep+"prev"+shark.sep+"recordings"+jsonext; // the previous i.e. currently live recordings json file   
     static String filePublicImages = sharkStartFrame.publicPathplus+jsonFolder+shark.sep+"images"+jsonext; // contains the old names and new names of the images  
     static String readPrevJsonImages = sharkStartFrame.publicPathplus+jsonFolder+shark.sep+"prev"+shark.sep+"images"+jsonext;
-    
-    
-    
+    static String fileTopics = sharkStartFrame.publicPathplus+jsonFolder+shark.sep+"topics"+jsonext;      // contains sentences wanted, and letter pattern headings wanted.    
+    static String readSrcJsonImages = sharkStartFrame.publicPathplus+jsonFolder+shark.sep+"src"+shark.sep+"images"+jsonext;
+    static String readDestJsonImages = sharkStartFrame.publicPathplus+jsonFolder+shark.sep+"dest"+shark.sep+"images"+jsonext;
     
     static String outputFolder = "publictopicsPrint";
  //   static String fileImageNames = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"imagenames"+jsonext; // contains the old names and new names of the images
     static String fileImages = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"images"+jsonext; // contains the old names and new names of the images
     static String fileSounds = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"recordings"+jsonext;   // contains the old names and new names of only those recordings that are wanted in the online version
     static String fileSounds2 = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"recordings2"+jsonext;
-    static String fileTopics = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"topics"+jsonext;    // contains sentences wanted, and letter pattern headings wanted.
+
     static String fileHeadingOutput = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"headings"+txtext;    // contains sentences wanted, and letter pattern headings wanted.
     static String fileSimpleSentOutput = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"simplesent"+txtext;    // contains sentences wanted, and letter pattern headings wanted.
     static String fileSentenceOutput = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"sentence"+txtext;    // contains sentences wanted, and letter pattern headings wanted.
     static String fileDummyRecordings = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"dummyRecordings"+txtext; // dummy files of 'ToBeRecorded' need to be produced for these recordings
   
-    String imageIWSPoolPath = "C:\\S3\\wordsharkimages\\iws";
+    String imageIWSS3PoolPath = "C:\\S3\\wordsharkimages\\iws";
+    String imageIPHOTOS3PoolPath = "C:\\S3\\wordsharkimages\\iphoto";
     static  String photoPoolPath = "C:\\Users\\PaulRubie\\Dropbox\\PhotosMatchedResources";
+//    static  String photoPoolPath = "C:\\PhotosMatchedResources";
     
     static String fileRecordingsBase = "C:\\Recordings\\";
     static String fileRecordingsSubFolderFiles = "Files\\";
@@ -1032,7 +1037,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         }    
         String ssFileIDs[] = new String[]{};
         String[] ssFileNames = new String[]{};
-        File listPublicWordsharkImageFiles[] =  new File(imageIWSPoolPath).listFiles();
+        File listPublicWordsharkImageFiles[] =  new File(imageIWSS3PoolPath).listFiles();
         for(int i = 0; i < listPublicWordsharkImageFiles.length; i++) {
             ssFileIDs = u.addString(ssFileIDs, getImageFileID(listPublicWordsharkImageFiles[i].getAbsolutePath()));
             ssFileNames = u.addString(ssFileNames, listPublicWordsharkImageFiles[i].getName());
@@ -1102,7 +1107,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         }    
         String ssFileIDs[] = new String[]{};
          String[] ssFileNames = new String[]{};
-        File listPublicWordsharkImageFiles[] =  new File(imageIWSPoolPath).listFiles();
+        File listPublicWordsharkImageFiles[] =  new File(imageIWSS3PoolPath).listFiles();
         for(int i = 0; i < listPublicWordsharkImageFiles.length; i++) {
             ssFileIDs = u.addString(ssFileIDs, getImageFileID(listPublicWordsharkImageFiles[i].getAbsolutePath()));
             ssFileNames = u.addString(ssFileNames, listPublicWordsharkImageFiles[i].getName());
@@ -1159,7 +1164,344 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                 }
             }
         }
+    }
+    
+    public void checkForSharkImagesWithoutJsonItems(){
+        JSONParser parser = new JSONParser();
+        JSONObject json = null;
+        JSONArray jsonResults = null;
+        try{
+            json = (JSONObject)parser.parse(new FileReader(filePublicImages));
+            jsonResults = (JSONArray) json.get(elements);
+        }
+        catch(Exception e){}         
+        
+        String dbs[] = new String[]{ "publicimage", "publicimageSENT"}; 
+        for(int k = 0; k < dbs.length; k++) {
+            String listPublicImage[] =  db.list(dbs[k], db.IMAGE);
+            innerloop : for(int i = 0; i < listPublicImage.length; i++) {
+                String details[];
+                if((details = saveAllImages_GetWordsharkImDetails(listPublicImage[i], dbs[k]))==null)continue;                  
+                int index = findJsonIndex(jsonResults, 
+                        new String[]{desktopName, database, sharkImageID, isWordshark}, 
+                        new String[]{details[DETAILS_NAME], dbs[k], details[DETAILS_ID], "1"});
+                if(index<0){
+                    System.out.println("Shark image without json item::   "+ details[DETAILS_NAME] + "  " + details[DETAILS_ID] );   
+                }
+            }
+        }
     }    
+
+    public void checkForImageJsonItemForDropboxFilesThatHaveSharkImages(){
+        JSONParser parser = new JSONParser();
+        JSONObject json = null;
+        JSONArray jsonResults = null;
+        try{
+            json = (JSONObject)parser.parse(new FileReader(filePublicImages));
+            jsonResults = (JSONArray) json.get(elements);
+        }
+        catch(Exception e){}         
+        
+        File[] listPublicImageFiles = new File(photoPoolPath).listFiles();
+        for(int i = 0; i < listPublicImageFiles.length; i++) {
+            String fileName = listPublicImageFiles[i].getName();
+            boolean isGif = fileName.endsWith(gifext);
+            boolean isPng = fileName.endsWith(pngext);
+            if(!isPng && !isGif)continue;
+            String details[];
+            if((details = saveAllImages_GetPhotoDetails(listPublicImageFiles[i]))==null)continue; 
+            int id = findJsonIndex(jsonResults, 
+                new String[]{fileID, desktopName, isWordshark, animated}, 
+                new String[]{details[DETAILS_ID], details[DETAILS_NAME], "0", isGif?"1":"0"});                
+            if(id < 0){
+                if((saveAllImages_GetWordsharkImDetails(details[DETAILS_NAME], null))==null)continue;                      
+                System.out.println("Desktop pool file doesn't have json item: " + fileName);               
+            }                
+        }        
+    }
+    
+    
+    public void findDuplicateDesktopNamesAndDetailsForImagesInJson(JSONArray jsonResults){
+        int size =  jsonResults.size();
+        for(int i = 0; i < size; i++) {
+            JSONObject p = (JSONObject) jsonResults.get(i);
+            String db = (String)p.get(database);
+            String isW = (String)p.get(isWordshark);
+            String name = (String)p.get(desktopName);
+            String used = (String)p.get(currentlyUsed);
+
+            boolean first = true;
+            for(int k = 0; k < size; k++) {
+                JSONObject p2 = (JSONObject) jsonResults.get(k);
+                String db2 = (String)p2.get(database);
+                String isW2 = (String)p2.get(isWordshark);
+                String name2 = (String)p2.get(desktopName);
+                String used2 = (String)p2.get(currentlyUsed);
+                try{
+                    boolean sameDb = (db == null && db2 == null) || (    db2 != null && db != null && db.equals(db2)  );
+                    if(k!=i && name2.equals(name) && sameDb && isW2.equals(isW)){
+                        if(first){
+                            System.out.println("Duplicates:   " + name + "  " + db + "  " + isW + "  " + used);
+                        }
+                        System.out.println("Duplicates:   " + name2 + "  " + db2 + "  " + isW2 + "  " + used2);
+                    }      
+                
+                }
+                catch(Exception e){
+                    int f;
+                    f = 0;
+                }   
+
+            }
+        }
+    }
+    
+    
+    
+    public void removeDatabaseFromPhotosImages(){
+        JSONParser parser = new JSONParser();
+        JSONObject json = null;
+        JSONArray jsonResults = null;
+        JSONArray jsonResultsOri = null;
+        try{
+            json = (JSONObject)parser.parse(new FileReader(filePublicImages));
+            jsonResultsOri = (JSONArray) json.get(elements);
+        }
+        catch(Exception e){}   
+        
+        jsonResults = (JSONArray)jsonResultsOri.clone();
+        int size =  jsonResults.size();
+        
+        for(int i = 0; i < size; i++) {
+            JSONObject p = (JSONObject) jsonResults.get(i);
+            String db = (String)p.get(database);
+            String isW = (String)p.get(isWordshark);
+            
+            
+            if(isW.equals("0") && db != null){
+                p.remove(database);
+            }
+
+        }
+        
+
+        
+        
+        JSONObject objectmain = new JSONObject();
+        
+        objectmain.put(elements, jsonResults);          
+        try (FileWriter file = new FileWriter(readDestJsonImages)) {
+
+            file.write(objectmain.toJSONString());
+            file.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }        
+    
+    
+    public void removeUnusedDuplicates(){
+        JSONParser parser = new JSONParser();
+        JSONObject json = null;
+        JSONArray jsonResults = null;
+        JSONArray jsonResultsOri = null;
+        try{
+            json = (JSONObject)parser.parse(new FileReader(filePublicImages));
+            jsonResultsOri = (JSONArray) json.get(elements);
+        }
+        catch(Exception e){}   
+        
+        jsonResults = (JSONArray)jsonResultsOri.clone();
+        int size =  jsonResults.size();
+        
+        ArrayList indexesToRemove = new ArrayList();
+        
+        for(int i = 0; i < size; i++) {
+            JSONObject p = (JSONObject) jsonResults.get(i);
+            String db = (String)p.get(database);
+            String isW = (String)p.get(isWordshark);
+            String name = (String)p.get(desktopName);
+            String used = (String)p.get(currentlyUsed);
+            
+            if(used.equals("true")){
+                continue;
+            }
+
+            boolean first = true;
+            for(int k = 0; k < size; k++) {
+                JSONObject p2 = (JSONObject) jsonResults.get(k);
+                String db2 = (String)p2.get(database);
+                String isW2 = (String)p2.get(isWordshark);
+                String name2 = (String)p2.get(desktopName);
+                String used2 = (String)p2.get(currentlyUsed);
+                try{
+                    boolean sameDb = (db == null && db2 == null) || (    db2 != null && db != null && db.equals(db2)  );
+                    if(k!=i && name2.equals(name) && sameDb && isW2.equals(isW)){
+                        
+                        if(used2.equals("false")){
+                            if(!indexesToRemove.contains(k)){
+                                indexesToRemove.add(k);
+                            }
+                        }
+                        if(used.equals("false")){
+                            if(!indexesToRemove.contains(i)){
+                                indexesToRemove.add(i);
+                            }
+                        }
+                        if(first){
+                            System.out.println("Duplicates:   " + name + "  " + db + "  " + isW + "  " + used);
+                        }
+                        System.out.println("Duplicates:   " + name2 + "  " + db2 + "  " + isW2 + "  " + used2);
+                    }      
+                
+                }
+                catch(Exception e){
+                    int f;
+                    f = 0;
+                }   
+
+            }
+        }
+        
+        indexesToRemove.sort(Collections.reverseOrder());
+        
+        for(int i = 0; i < indexesToRemove.size(); i++){
+            int index  = (int)indexesToRemove.get(i);
+            jsonResults.remove(index);
+        }
+        
+        
+        JSONObject objectmain = new JSONObject();
+        
+        objectmain.put(elements, jsonResults);          
+        try (FileWriter file = new FileWriter(readDestJsonImages)) {
+
+            file.write(objectmain.toJSONString());
+            file.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }    
+    
+    
+    
+    public void verifyImages(){
+        JSONParser parser = new JSONParser();
+        JSONObject json = null;
+        JSONArray jsonResults = null;
+        JSONArray jsonResultsOri = null;
+        try{
+            json = (JSONObject)parser.parse(new FileReader(filePublicImages));
+            jsonResultsOri = (JSONArray) json.get(elements);
+        }
+        catch(Exception e){}  
+        
+        findDuplicateDesktopNamesAndDetailsForImagesInJson(jsonResultsOri);
+        checkForImageJsonItemForDropboxFilesThatHaveSharkImages();
+        checkForSharkImagesWithoutJsonItems();
+        
+        jsonResults = (JSONArray)jsonResultsOri.clone();
+        int size =  jsonResults.size();
+        for(int i = 0; i < size; i++) {
+            JSONObject p = (JSONObject) jsonResults.get(i);
+            String db = (String)p.get(database);
+            String onlinename = (String)p.get(onlineName);
+            String sharkID = (String)p.get(sharkImageID);
+            String used = (String)p.get(currentlyUsed);
+            String fID = (String)p.get(fileID);
+            String isW = (String)p.get(isWordshark);
+            String name = (String)p.get(desktopName);
+            boolean isAnimated = ((String)p.get(animated)).equals("1");
+
+            if(isW.equals("1")){
+
+                if(fID == null){
+                    System.out.println("iws "  + db + "  " + name + "  " + onlinename + " missing file identifier");
+                }
+
+                File file = new File(imageIWSS3PoolPath + "\\" + onlinename);
+                if(!file.exists()){
+                    System.out.println("iws "  + db + "  " + name + "  " + onlinename + " no file");
+                }
+                else{
+                    String fileId = getImageFileID(file.getAbsolutePath());
+                    if(fID != null &&!fID.equals(fileId)){
+                        System.out.println("iws "  + db + "  " + name + "  " + onlinename + " incorrect file id");
+                    }                        
+                }
+                if(sharkID == null){
+                    // Ignore if there isn't a shark image for this json item
+                    if((saveAllImages_GetWordsharkImDetails(name, db))!=null){
+                        System.out.println("iws "  + db + "  " + name + "  " + onlinename + " no shark image identifier");
+                    }
+                }
+                else{
+                    if(db == null){
+                        System.out.println("iws "  + db + "  " + name + "  " + onlinename + " no database");
+                    }
+                    if(name == null){
+                        System.out.println("iws "  + db + "  " + name + "  " + onlinename + " no desktop name");
+                    }
+                    String details[] = null;
+                    boolean gotImageDetails = false;
+                    try{
+                        details = saveAllImages_GetWordsharkImDetails(name, db);
+                    }
+                    catch(Exception e){
+//                        Uncomment if want to see which images in the json are no present in the publicimage files
+//                        System.out.println("iws "  + db + "  " + name + "  " + onlinename + " can't get image details 1");
+                    }   
+                    if(details == null){
+//                        Uncomment if want to see which images in the json are no present in the publicimage files
+//                        System.out.println("iws "  + db + "  " + name + "  " + onlinename + " can't get image details 2");
+                    }
+                    if(!gotImageDetails){
+                        continue;
+                    }
+                    if(!details[DETAILS_ID].equalsIgnoreCase(sharkID)){
+                        System.out.println("iws "  + db + "  " + name + "  " + onlinename + " wrong shark image identifier");
+                    }      
+                }
+ 
+            }
+            else{
+                String s3FileId = null;
+                if(fID == null){
+                    System.out.println("iphoto "  + db + "  " + name + "  " + onlinename + " missing file identifier");
+                }  
+                File fileS3 = new File(imageIPHOTOS3PoolPath + "\\" + onlinename);
+                if(!fileS3.exists()){
+                    System.out.println("iphoto "  + db + "  " + name + "  " + onlinename + " no file");
+                }
+                else{
+                    s3FileId = getImageFileID(fileS3.getAbsolutePath());
+                    if(fID != null &&!fID.equals(s3FileId)){
+                        System.out.println("iphoto "  + db + "  " + name + "  " + onlinename + "  " + fID + "  " + s3FileId  + "  " +  fileS3.getAbsolutePath() + " incorrect file id");
+                    }                        
+                }
+                
+                String dropboxFileName = photoPoolPath + "\\" + charToAscii(name) + (isAnimated ? ".gif" : ".png");
+                File fileDropbox = new File(dropboxFileName);
+                if(!fileDropbox.exists()){
+                    if(!used.equals("false")){
+                       System.out.println("iphoto "  + db + "  " + name + "  " + onlinename + "  " + dropboxFileName + " missing Dropbox file");                              
+                    }
+                }   
+                else{
+                    String dropboxFileID = getImageFileID(fileDropbox.getAbsolutePath());
+                    if(!s3FileId.equals(dropboxFileID)){
+                        System.out.println((used.equals("false")?"old":"") +"iphoto "  + db + "  " + name + "  " + onlinename + "  " + dropboxFileName + " identifier mismatch between Dropbox and S3");
+                    }
+                }
+            }
+        }
+    }  
+    
+    
     
     /*
     
@@ -1195,7 +1537,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         //get file ids of Wordshark images
         String[] iwsS3FileIDs = new String[]{};
         String[] iwsS3FilePaths = new String[]{};
-        File listPublicImageFiles[] =  new File(imageIWSPoolPath).listFiles();
+        File listPublicImageFiles[] =  new File(imageIWSS3PoolPath).listFiles();
         for(int i = 0; i < listPublicImageFiles.length; i++) {
             iwsS3FileIDs = u.addString(iwsS3FileIDs, getImageFileID(listPublicImageFiles[i].getAbsolutePath()));
             iwsS3FilePaths = u.addString(iwsS3FilePaths, listPublicImageFiles[i].getAbsolutePath());
@@ -1204,6 +1546,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         JSONParser parser = new JSONParser();
         JSONObject json = null;
         JSONArray prevRecResults = null;
+        JSONArray currentImageResults = null;
         try{
             json = (JSONObject)parser.parse(new FileReader(readPrevJsonImages));
             prevRecResults = (JSONArray) json.get(elements);
@@ -1212,6 +1555,17 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
             int h; 
             h = 0;
         }
+        
+        
+        try{
+            json = (JSONObject)parser.parse(new FileReader(filePublicImages));
+            currentImageResults = (JSONArray) json.get(elements);
+        }
+        catch(Exception e){
+            int h; 
+            h = 0;
+        }        
+        
         // copy previous json, set all to unused. get the names in ssOnlineMinusExt
         for(int i = 0; i < prevRecResults.size(); i++) {
             JSONObject p = (JSONObject) prevRecResults.get(i);
@@ -1232,7 +1586,9 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         JSONArray arrayElementOneArray = (JSONArray)prevRecResults.clone();
         
         // loop through the publicimage images - get ID
-        String pref = pre_wordshark_images+"_";  
+        String pref = pre_wordshark_images+"_"; 
+        
+        int imageCount = 0;
         for(int k = 0; k < dbs.length; k++) {
             String listPublicImage[] =  db.list(dbs[k], db.IMAGE);
             innerloop : for(int i = 0; i < listPublicImage.length; i++) {
@@ -1241,6 +1597,10 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                     int g; 
                     g = 0;
                 }    
+                
+                
+                imageCount++;
+                
                 if((details = saveAllImages_GetWordsharkImDetails(listPublicImage[i], dbs[k]))==null)continue;                  
                 if(details[DETAILS_NAME].equalsIgnoreCase("fire")){
                     int g; 
@@ -1269,12 +1629,12 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
 //                    } 
 //                    System.out.println("Wordshark image NOT FOUND IN FIRST RUN: "+details[DETAILS_NAME]);
 //                }    
-                int id = findJsonIndex(arrayElementOneArray, 
-                        new String[]{desktopName, sharkImageID, currentlyUsed, isWordshark}, 
-                        new String[]{details[DETAILS_NAME], details[DETAILS_ID], "false", "1"});
+                int index = findJsonIndex(arrayElementOneArray, 
+                        new String[]{desktopName, sharkImageID}, 
+                        new String[]{details[DETAILS_NAME], details[DETAILS_ID]});
                 // If the details for the publicimage image are the same as they are in the previous json
-                if(id>=0){
-                    JSONObject p = (JSONObject) arrayElementOneArray.get(id);
+                if(index>=0){
+                    JSONObject p = (JSONObject) arrayElementOneArray.get(index);
                     String fileid = (String)p.get(fileID); 
                     if(fileid != null){
                         int ind = u.findString(iwsS3FileIDs, fileid);
@@ -1283,8 +1643,11 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                             p.put(currentlyUsed,"true");
                             String onName = (String)p.get(onlineName);
                             String str = onName.substring(0, onName.lastIndexOf("."));
-                            ssOnlineMinusExt = u.addString(ssOnlineMinusExt, str);
-                            arrayElementOneArray.set(id, p);
+                            if(u.findString(ssOnlineMinusExt, str)<0){
+                               ssOnlineMinusExt = u.addString(ssOnlineMinusExt, str); 
+                            }
+                            
+                            arrayElementOneArray.set(index, p);
        //                     System.out.println("Wordshark image FOUND: "+sname);
                             continue innerloop;
                         }  
@@ -1295,19 +1658,19 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                 }
             }
         }
-        // create new entries / s3names
+        // looping through publicimage files, matching to json
         for(int k = 0; k < dbs.length; k++) {
             String listPublicImage[] =  db.list(dbs[k], db.IMAGE);
             innerloop : for(int i = 0; i < listPublicImage.length; i++) {
                 String details[];
                 if((details = saveAllImages_GetWordsharkImDetails(listPublicImage[i], dbs[k]))==null)continue;                  
-                if(details[DETAILS_NAME].equalsIgnoreCase("claw")){
+                if(details[DETAILS_NAME].equalsIgnoreCase("herd")){
                     int g; 
                     g = 0;
                 }                               
-                int id = findJsonIndex(arrayElementOneArray, 
-                        new String[]{desktopName, sharkImageID, currentlyUsed, isWordshark}, 
-                        new String[]{details[DETAILS_NAME], details[DETAILS_ID], "true", "1"});
+                int id = findJsonIndex(currentImageResults, 
+                        new String[]{desktopName, sharkImageID}, 
+                        new String[]{details[DETAILS_NAME], details[DETAILS_ID]});
                 // Skip past those that have been dealt with above
                 if(id>=0){
                     continue;
@@ -1316,7 +1679,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
                 // if it was in previous, found - do want to contiue, othetwise end up with double
                 
                  // currentlyused worry
-                System.out.println("Wordshark image, CREATE NEW: "+details[DETAILS_NAME]);
+                System.out.println("Wordshark image, CREATE NEW: "+dbs[k] + "  " +details[DETAILS_NAME]);
 
                 JSONObject obSub = new JSONObject();
                 String strwithoutprefix = getImageS3Name(dbs[k], details[DETAILS_NAME], ssOnlineMinusExt, pref);
@@ -1339,6 +1702,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
 
             }
         }
+        System.out.println("imageCount: "+imageCount);
             
         // do the photograph images       
         pref = pre_photographs+"_";
@@ -1375,9 +1739,9 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
 //                System.out.println("Photo image NOT FOUND IN FIRST RUN: "+details[DETAILS_NAME]);
 //            }
             // look for match of fileID and desktopName
-            int id = findJsonIndex(arrayElementOneArray, 
-                new String[]{fileID, desktopName, currentlyUsed}, 
-                new String[]{details[DETAILS_ID], details[DETAILS_NAME], "false"});                
+            int id = findJsonIndex(currentImageResults, 
+                new String[]{fileID, desktopName}, 
+                new String[]{details[DETAILS_ID], details[DETAILS_NAME]});                
             if(id>=0){
                 // if match - use
                 JSONObject p = (JSONObject) arrayElementOneArray.get(id);  
@@ -1389,7 +1753,7 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
        //         System.out.println("Photo image FOUND: "+fileName);
                 continue;
             }    
-            System.out.println("Photo image NOT FOUND: "+details[DETAILS_NAME]);
+            System.out.println("Photo image NOT FOUND: "+details[DETAILS_NAME] + "   ID:  " + details[DETAILS_ID]);
         }                        
         for(int i = 0; i < listPublicImageFiles.length; i++) {
             if(!listPublicImageFiles[i].getName().endsWith(pngext) && !listPublicImageFiles[i].getName().endsWith(gifext))continue;
@@ -1476,14 +1840,24 @@ java.util.List<ArrayList<String>> namesAndNumbers = new ArrayList<ArrayList<Stri
         if(sname.trim().equals(""))return null;
         if(sname.indexOf("_")>=0)return null;
         int libNo = -1;
-        for(int i = 0; i < sharkStartFrame.publicImageLib.length; i++){
-            String s = sharkStartFrame.publicImageLib[i];
-            s = s.substring(s.lastIndexOf(shark.sep)+1);
-            if(s.equals(db)){
-                libNo = i;
-            }
+        sharkImage im1 = null;
+        if(db != null){
+            for(int i = 0; i < sharkStartFrame.publicImageLib.length; i++){
+               String s = sharkStartFrame.publicImageLib[i];
+               s = s.substring(s.lastIndexOf(shark.sep)+1);
+               if(s.equals(db)){
+                   libNo = i;
+               }
+           }
+           im1 = sharkImage.find(sname, libNo);           
         }
-        sharkImage im1 = sharkImage.find(sname, libNo);  
+        else{
+           im1 = sharkImage.find(sname);
+        }
+
+        if(im1 == null){
+            return null;
+        }
         ret[DETAILS_NAME] = sname;
         ret[DETAILS_ISANIMATED] = (im1.c.length>1 && (im1.im.controls[0].min>0 || im1.im.controls[0].max>0))?"1":"0";
         ret[DETAILS_ID] =  getSaveSharkImageID(im1.im);
@@ -3245,7 +3619,7 @@ Used when recordings have been made with Audicity that are in sperate files (the
                 String currUsed = (String)p.get(currentlyUsed);
 //                if(currUsed!=null  && currUsed.equals("false"))continue;
                 for(int k = 0; k < key.length; k++) {
-                    String db = (String)p.get(key[k]); 
+                    String db = (String)p.get(key[k]);
                     
                     if(db!=null){
                         if(db.equals(value[k])){
@@ -3261,6 +3635,103 @@ Used when recordings have been made with Audicity that are in sperate files (the
         }
         return -1;
     }    
+    
+    
+    
+    
+
+   
+    public void populateImageJsonWithIDs(){
+        JSONParser parser = new JSONParser();
+        JSONArray jsonImageResults = null;
+        try {
+            JSONObject json = (JSONObject) parser.parse(new FileReader(readSrcJsonImages));
+            jsonImageResults = (JSONArray) json.get(ToolsOnlineResources.elements);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+        JSONArray jsonArray = (JSONArray)jsonImageResults.clone();
+        for(int i = 0; i < jsonArray.size(); i++) {
+            JSONObject p = (JSONObject) jsonArray.get(i);
+            String id = (String)p.get("fileID");
+            if(id != null){
+                continue;
+            }
+            boolean isPhoto = p.get("isWordshark").equals("0");
+            if(!isPhoto){
+                String name = (String)p.get("onlineName");
+                File file = new File(imageIWSS3PoolPath+ "\\"+ name);
+                if(file.exists()){
+                    String fileId = getImageFileID(file.getAbsolutePath());
+                    p.put(fileID, fileId);
+                    
+                    System.out.println("setting:  " + name);
+    
+                    jsonArray.set(i, p);
+                }
+            }
+        }
+        
+        
+        JSONObject objectmain = new JSONObject();
+        
+        objectmain.put(elements, jsonArray);          
+        try (FileWriter file = new FileWriter(readDestJsonImages)) {
+
+            file.write(objectmain.toJSONString());
+            file.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }    
+        
+    
+    public void populateImageJsonWithSharkImageIDs(){
+        JSONParser parser = new JSONParser();
+        JSONArray jsonImageResults = null;
+        try {
+            JSONObject json = (JSONObject) parser.parse(new FileReader(readSrcJsonImages));
+            jsonImageResults = (JSONArray) json.get(ToolsOnlineResources.elements);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+        JSONArray jsonArray = (JSONArray)jsonImageResults.clone();
+        for(int i = 0; i < jsonArray.size(); i++) {
+            JSONObject p = (JSONObject) jsonArray.get(i);
+            String id = (String)p.get("sharkImageID");
+            if(id != null){
+                continue;
+            }
+            boolean isPhoto = p.get("isWordshark").equals("0");
+            if(!isPhoto){
+                
+                String details[];
+                String databaseName = (String)p.get(database);
+                String name = (String)p.get(desktopName);
+                if((details = saveAllImages_GetWordsharkImDetails(name, databaseName))==null)continue;                      
+                int index = findJsonIndex(jsonArray, 
+                        new String[]{desktopName, database, isWordshark}, 
+                        new String[]{name, databaseName, "1"});
+                if(index>=0){
+                    System.out.println("setting:  " + details[DETAILS_NAME]);
+                    p.put(sharkImageID, details[DETAILS_ID]);           
+                    jsonArray.set(index, p);             
+                }                
+            }
+        }
+        JSONObject objectmain = new JSONObject();
+        
+        objectmain.put(elements, jsonArray);          
+        try (FileWriter file = new FileWriter(readDestJsonImages)) {
+
+            file.write(objectmain.toJSONString());
+            file.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }         
+    }      
     
     
     /*
@@ -3384,7 +3855,7 @@ Used when recordings have been made with Audicity that are in sperate files (the
         return null;
     }
     
-    
+      
     public boolean findJsonRecording(JSONArray jsonRecResults, String online){
         try {
             for(int i = 0; i < jsonRecResults.size(); i++) {

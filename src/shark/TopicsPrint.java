@@ -1623,7 +1623,7 @@ ButtonGroup btgroup;
                                     
  //                                   System.out.println(st.curr.names[j]);
                             if(st.curr.names[j].indexOf("All or none")>=0){
-                                System.out.println("WORD LIST: "+st.curr.names[0]);
+ //                               System.out.println("WORD LIST: "+st.curr.names[0]);
                             }                                    
                                  
                                     
