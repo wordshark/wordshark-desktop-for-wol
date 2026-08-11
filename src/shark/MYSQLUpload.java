@@ -44,6 +44,7 @@ import java.text.*;
 
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.TimeUnit;
 /**
  *
  * @author paulr
@@ -51,11 +52,6 @@ import java.io.UnsupportedEncodingException;
 public class MYSQLUpload {
     
     final static String PROJECT_PATH = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\";
-
-    final static int MODE_VIA_DUMP = 0;
-    final static int MODE_DIRECT = 1;
-    
-    final static int CURRENT_MODE = MODE_DIRECT;
     static String accessToken = null;
     static int currentEnvironment = -1;
     static String currentCourse = null;
@@ -258,8 +254,10 @@ public class MYSQLUpload {
         COURSE_WORDSHARK_TEST,
         COURSE_SPELLING_CATCH_UP
     };
-
-    static String apiCalls[] = new String[0];
+    
+    
+    int[] singleSoundGameIdOrder = new int[]{}; 
+    int[] wholeWordGameIdOrder = new int[]{};   
     
     static String letterPatternGames[] = new String[]{GAME_SNAKESANDLADDERS, GAME_PATTERN, GAME_TRACKING};
 
@@ -293,7 +291,6 @@ public class MYSQLUpload {
     int CAT_NONPHONICS = 0;
     static final String[] GAMESBLOCKSTOIGNORE = new String[]{"crossword 2", "add suffix", "classify", "snakes & ladders"};
     static final String[] GAMESTOIGNORE = new String[]{"add suffix", "balance", "balloons", "bingo listen", "bingo words", "build phrase (from spoken)", "build phrase (with picture)", "build word", "chunks", "classify", "crossword 2", "dictionary fish", "fast find", "find phrase", "find sound (for picture)", "flums", "fruit machine", "hidden letter", "holes", "jumbled", "learn", "letter maze", "lottery", "maze alter", "moving", "pairs (linked words)", "pairs (sound+letter)", "say phrase", "scan", "scan (linked words)", "shredder", "snap (linked words)", "split sound", "tilt", "tracking", "trains", "trains (phonics)", "trains (syllables)", "word sort", "save the sharks", "rolling"};
-    //   static final String[] GAMESTABSTOIGNORE = new String[]{"crossword 2","add suffix", "classify", "tracking"};
     static final String[] PHONICDISTRACTOR_GAMECODEID = new String[]{"findsound"};
     static final String GTX_SUFFIXES = GTX_GAMES + "Add suffix";
     static final String GTX_SENTENCES1 = GTX_GAMES + GAME_SENTENCECROSSWORD;
@@ -308,8 +305,7 @@ public class MYSQLUpload {
 
     static String[] fullSentenceGames = new String[]{};
 
-    public static boolean uploadImages = false;
-    public static boolean restXML = true;
+
     public static boolean generateImageFiles = false;
     public static sharkImage.saveSharkImage currSaveSharkImage;
     public static String mySqlRudeWords[];
@@ -317,11 +313,10 @@ public class MYSQLUpload {
     static int attributeCount = -1;
     static int attributeIndexCount = -1;
     static final String SVGIMAGEFOLDER = PROJECT_PATH + "svg";
-    static final String RESTXMLFOLDER = PROJECT_PATH + "XML\\restXML";
+
     static final String RESTJSONFOLDER = PROJECT_PATH + "json_output";
     
-    
-    static final String WORDSXMLFOLDER = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\XML\\wordsXML";
+
     static final String BMPIMAGEFOLDERPLUS = "C:\\xampp\\htdocs\\img\\publicimages\\";
     static final String WEBIMAGEFOLDERPLUS = "/img/publicimages/";
     static final String WEBSVGFOLDERPLUS = "/img/svg/";
@@ -330,13 +325,6 @@ public class MYSQLUpload {
 
     static final String BMPIMAGEEXTENSIONS[] = new String[]{".jpg", ".png"};
 
-    static final String GTX_ROOT_XML = "root";
-    static final String GTX_TOPICROOT_XML = "Topic";
-    static final String GTX_TBS_XML = "TopicBlocks";
-    static final String GTX_TB_XML = "TopicBlock";
-    static final String GTX_TB_TYPE_AT_XML = "TBType";
-    static final String GTX_REF_TYPE_AT_XML = "RefType";
-    static final String GTX_TB_NUM_AT_GAMEBLOCKTYPE = "GameBlockType";
 
     static final String TOPICBLOCKGAMETYPE_HELICOPTERLISTEN = "HELICOPTERLISTEN";
     static final String TOPICBLOCKGAMETYPE_HELICOPTERSPELL = "HELICOPTERSPELL";
@@ -356,13 +344,8 @@ public class MYSQLUpload {
     static final String GTX_WORD_XML = "Word";
     static final String GTX_WORDNAME_AT_XML = "WordName";
     static final String GTX_WORDIMAGENAME_AT_XML = "WordImageName";
-    static final String GTX_WORDUUID_AT_XML = "WordUUID";
 
-    static final String GTX_IMUUID_AT_XML = "ImUUID";
-    static final String GTX_IMBMPUUID_AT_XML = "ImBMPUUID";
-    static final String GTX_RECUUID_AT_XML = "RecUUID";
-    static final String GTX_HOMOPHONERECUUID_AT_XML = "HomoRecUUID";
-    static final String GTX_SENT_RECUUID_AT_XML = "RecSentUUID";
+
 
     static final String GTX_WORD_EXCLUDE_REVISE_AT_XML = "WordExcludeRevise";
     static final String GTX_WORD_EXCLUDE_AP_TEST_AT_XML = "WordExcludeApTest";
@@ -390,9 +373,9 @@ public class MYSQLUpload {
 
     static final String GTX_GAMEBLOCKTYPE_AT_XML = "GameBlockType";
 
-    static final String GTX_TOPICNAME = "GTX_TOPICNAME";
+
     static final String GTX_TOPICNAME_AT_XML = "TopicName";
-    static final String GTX_TOPICUUID_AT_XML = "TopicUUID";
+
     static final String GTX_ISREVISION_AT_XML = "IsRevision";
     static final String GTX_TEACHINGNOTE = "\\";
     static final String GTX_TEACHINGNOTE_AT_XML = "TopicTeachingNote";
@@ -618,13 +601,11 @@ public class MYSQLUpload {
     static String[] uploadTopicNames = new String[]{};
     static int[] uploadTopicUUID = new int[]{};
     static String[] uploadWordXml = new String[]{};
-    static String[] uploadWordSVG = new String[]{};
-    static String[] uploadWordBMPIdentifier = new String[]{};
+
+
     static String[] uploadRecordingDetails = new String[]{};
     static int[] uploadRecordingUUID = new int[]{};
 
-    static int[] uploadWordSVGUUID = new int[]{};
-    static int[] uploadWordBMPUUID = new int[]{};
     static String[] uploadWordXMLRecord = new String[]{};
     static int[] uploadWordUUID = new int[]{};
     static boolean uploadStageUploadTopics = false;
@@ -662,9 +643,9 @@ public class MYSQLUpload {
 
     static int currCat = -1;
     static int currGameIds[] = null;
-    static String gameNames[] = new String[]{};
+    static String[] allGameNames = new String[]{};
     static String gameCategory[] = new String[]{};
-    static int gameID[] = new int[]{};
+    static int[] allGameIDs = new int[]{};
     int gameReferenceNodeCount = 0;
     final String STR_NO = "No";
     word[] currStandardWords;
@@ -709,70 +690,78 @@ public class MYSQLUpload {
         for (int i = 0; i < 4; i++) {
             gamesMainCategories = u.addString(gamesMainCategories, jns[i].get());
         }
-    }
+        
 
-    private String getPhonicsHomoMainRec(String sound, String alreadyRec) {
-        String ret = "SOUNDHOMO_" + sound + ".mp3";
-        switch (sound) {
-            case "c":
-                return ret;
-            case "k":
-                return ret;
-            case "x":
-                return ret;
-            default:
-                return alreadyRec;
-        }
-    }
 
-    private String getPhonicsHomoHomoRec(String sound) {
-        String p = "SOUNDHOMO_" + sound + ".mp3";
-        switch (sound) {
-            case "c":
-                return null;
-            case "k":
-                return null;
-            case "x":
-                return null;
-            default:
-                return p;
-        }
-    }
+        jnode node;
 
-    static String uploadToService(String phpPath, String[] names, String[] values) {
-        if(u.findString(apiCalls, phpPath) < 0){
-            apiCalls = u.addString(apiCalls, phpPath);
-        }
-        String ret = "";
+        allGameNames = new String[]{};
+        String staticGameSubNames[] = new String[]{};
+        String staticGameWholeNames[] = new String[]{};
+        int staticGameIDs[] = new int[]{};
+        String cvsSplitBy = ",";
+        JSONArray jsonarr = null;
         try {
-            java.net.URL url = new java.net.URL(phpPath);
-            java.net.URLConnection conn = url.openConnection();
-            conn.setDoOutput(true);
-            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-
-            String w = "";
-            for (int i = 0; i < names.length; i++) {
-                w += names[i] + "=" + values[i];
-                if (i < names.length - 1) {
-                    w += "&";
-                }
-            }
-            writer.write(w);
-
-            writer.flush();
-            String line;
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            while ((line = reader.readLine()) != null) {
-                ret += line;
-            }
-            writer.close();
-            reader.close();
-        } catch (Exception rr) {
-            int h = 0;
+            JSONParser parserGames = new JSONParser();
+            jsonarr = (JSONArray) parserGames.parse(new FileReader(sharkStartFrame.publicPathplus + "json" + shark.sep + "GamesAndIDs.json"));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return ret;
+        for (int i = 0; i < jsonarr.size(); i++) {
+            JSONObject jo = (JSONObject) jsonarr.get(i);
+            staticGameIDs = u.addint(staticGameIDs, ((Long) jo.get("id")).intValue());
+            String gname = (String) jo.get("name");
+            String gnamess[] = gname.split(cvsSplitBy);
+            String name = gnamess[0].trim();
+            String subname = gnamess.length > 1 ? gnamess[1].trim() : "";
+
+            staticGameSubNames = u.addString(staticGameSubNames, subname);
+            
+            String wholeName = (name + " " + subname).trim();
+            staticGameWholeNames = u.addString(staticGameWholeNames, wholeName);
+            
+            allGameNames = u.addString(allGameNames, wholeName);
+            allGameIDs = u.addint(allGameIDs, Integer.parseInt(String.valueOf(jo.get("id"))));
+        }
+
+
+        String problemGames[] = new String[]{};
+        for (int i = 0; i < ALL_GAMES.length; i++) {
+            if (u.findString(staticGameWholeNames, ALL_GAMES[i]) < 0) {
+                problemGames = u.addString(problemGames, ALL_GAMES[i]);
+            }
+        }
+        if (problemGames.length > 0) {
+            u.okmess(shark.programName + " Misnamed games", u.combineString(problemGames), sharkStartFrame.mainFrame);
+            return;
+        }        
+        
+        
+        gamestoplay gameTreeWholeWords = new gamestoplay();     
+        gameTreeWholeWords.setup(sharkStartFrame.publicGameLib, true, true, "porting", new int[] {0});
+        
+        for (node = (jnode) gameTreeWholeWords.root.getFirstLeaf(); node != null; node = (jnode) node.getNextLeaf()) {
+            int i = u.findString(allGameNames, node.get());
+            if (i >= 0) {
+                wholeWordGameIdOrder = u.addint(wholeWordGameIdOrder, getGameID(node.get()), wholeWordGameIdOrder.length);
+            }
+        }    
+        
+        
+        gamestoplay gameTreeSingleSounds = new gamestoplay();     
+        gameTreeSingleSounds.setup(sharkStartFrame.publicGameLib, true, true, "porting", new int[] {1});
+        
+        for (node = (jnode) gameTreeSingleSounds.root.getFirstLeaf(); node != null; node = (jnode) node.getNextLeaf()) {
+            int i = u.findString(sharkStartFrame.gamename, node.get());
+            if (i >= 0) {
+                singleSoundGameIdOrder = u.addint(singleSoundGameIdOrder, getGameID(node.get()), singleSoundGameIdOrder.length);
+            }
+        } 
+        int he;
+        he = 0;
     }
+
+
     
      String apiGetAccessToken(int env) {
         apiConfig config = API_CONFIGS[env];
@@ -818,6 +807,7 @@ public class MYSQLUpload {
         } 
         apiConfig config = API_CONFIGS[env];
         JSONObject ret = null;
+        long startTimeMillis = System.currentTimeMillis();
         try {
             java.net.URL url = new java.net.URL(urlPath);
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -836,6 +826,10 @@ public class MYSQLUpload {
               new InputStreamReader(con.getInputStream(), "utf-8"))) {
                 StringBuilder response = new StringBuilder();
                 String responseLine = null;
+                
+                long endTimeMillis = System.currentTimeMillis();
+                System.out.println("Request duration: " + TimeUnit.MILLISECONDS.toSeconds(endTimeMillis - startTimeMillis));
+                
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
@@ -845,17 +839,19 @@ public class MYSQLUpload {
                     return Integer.parseInt(String.valueOf(ob.get("id")));
                 }
                 else{
+                    
                     System.out.println(con.getErrorStream().toString());
                     System.out.println(con.getResponseMessage());
+                    System.exit(0);
                     int dd;
                     dd = 0;   
                 }
             }
             
         } catch (Exception rr) {
-            int dd;
-            dd = 0;
+           System.out.println("Error:  " + rr.getMessage());
         }
+        
         u.okmess(shark.programName, "Failed");
         System.exit(0);
         return -1;
@@ -900,66 +896,6 @@ public class MYSQLUpload {
         API_CONFIGS[env].accessToken = accessToken;
     }
 
-    public void StartUpload() {
-        uploadTopicNames = new String[]{};
-        uploadTopicUUID = new int[]{};
-        uploadWordXml = new String[]{};
-        uploadWordSVG = new String[]{};
-        uploadWordBMPIdentifier = new String[]{};
-        uploadWordSVGUUID = new int[]{};
-        uploadWordBMPUUID = new int[]{};
-        topicIdsDoneForRest = new int[]{};
-        uploadRecordingDetails = new String[]{};
-        uploadRecordingUUID = new int[]{}; 
-        uploadWordUUID = new int[]{};
-        uploadStageUploadTopicToHeading = false;
-        uploadStageUploadWords = false;
-        uploadStageUploadRest = false; 
-    }
-
-    public String UploadCourse(String CourseName) {
-        if (!uploadStageUploadTopicToHeading) {
-            return null;
-        }
-
-        String csvFile = sharkStartFrame.publicPathplus + "csv" + shark.sep + "CoursesAndIDs.csv";
-        BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ",";
-        String staticCourseNames[] = new String[]{};
-        int staticCourseIDs[] = new int[]{};
-        try {
-            br = new BufferedReader(new FileReader(csvFile));
-            while ((line = br.readLine()) != null) {
-                // use comma as separator
-                String[] item = line.split(cvsSplitBy);
-                String no = "";
-                char c[] = item[0].toCharArray();
-                for (int i = 0; i < c.length; i++) {
-                    if (Character.isDigit(c[i])) {
-                        no += String.valueOf(c[i]);
-                    }
-                }
-                staticCourseIDs = u.addint(staticCourseIDs, Integer.parseInt(no));
-                staticCourseNames = u.addString(staticCourseNames, item[1].trim());
-
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return getCourseIDFromNames(staticCourseIDs, staticCourseNames, CourseName);
-    }
-
     public int UploadTopicHeading(String HeadingDisplay, String HeadingIndex, String OwningCourseID, String OwningCourse, String OwningHeadingID,
             String TopicHeadingNameType, String Locale, String UnitType, String Description) {
         if (!uploadStageUploadTopicToHeading) {
@@ -983,255 +919,20 @@ public class MYSQLUpload {
 
         System.out.println("Heading :" + "  " + HeadingDisplay);
         
-        String s= null;
         int ret = -1;
-        
-        
-        
-        if(CURRENT_MODE == MODE_DIRECT){
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("name", HeadingDisplay);
-            jsonObject.put("unit_order", HeadingIndex);
-            jsonObject.put("version_id", currCourseVersion);
-            jsonObject.put("description", Description);
-            if(UnitType != null){
-                jsonObject.put("type", UnitType);
-            }
-            
-            ret = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/unit",
-                jsonObject.toString(), currentEnvironment);   
-        }
-        else{
-            s = uploadToService("http://localhost/so_uploadTopicHeading.php",
-                    new String[]{"heading_display", "heading_index", "owning_course_id", "owning_heading_id", "topic_heading_name_type", "locale", "unit_type", "version", "description"},
-                    new String[]{HeadingDisplay, HeadingIndex, OwningCourseID, OwningHeadingID, TopicHeadingNameType, Locale, UnitType, currCourseVersion, Description});            
-        
-            try {
-                ret = Integer.parseInt(s);
-            } catch (Exception e) {
-                int gg;
-                gg = 0;
-            }
-        }
 
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("name", HeadingDisplay);
+        jsonObject.put("unit_order", HeadingIndex);
+        jsonObject.put("version_id", currCourseVersion);
+        jsonObject.put("description", Description);
+        if(UnitType != null){
+            jsonObject.put("type", UnitType);
+        }
+            
+        ret = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/unit",
+            jsonObject.toString(), currentEnvironment);   
         return ret;
-    }
-    
-    public int UploadTopicAndSounds(topic t, String topicSettings, int unit_id, int unit_index, int wordlist_index, String course, jnode jn, String treepath,
-            String teachingNote, String topicName, String isUnitRevision, String revision, String apNotInTest, String apNotInUnitOrTest, String apPriority, String hasStandard, String hasExtended) {
-
-        if (t.name.equals("garbage")) {
-            return -1;
-        }
-
-        if (t.name.equals("Alternative sounds for 'u'")) {
-            int gg;
-            gg = 9;
-        }
-
-        word standardWords[] = t.getWords(null, false);
-        System.out.println("Topic :" + "  " + t.name);
-
-        int availablegamescats[] = null;
-        if (t.phrases) {  //captions
-            availablegamescats = new int[]{CAT_PHRASES};
-            currCat = CAT_PHRASES;
-        } else if (t.phonics && !t.phonicsw) {  // sounds
-            availablegamescats = new int[]{CAT_SOUNDS};
-            currCat = CAT_SOUNDS;
-        } else if (!t.phonicsw || t.notphonics) {  // nonphonic
-            availablegamescats = new int[]{CAT_NONPHONICS};
-            currCat = CAT_NONPHONICS;
-        } else if (t.justphonics) {  // justphonic
-            availablegamescats = new int[]{CAT_PHONICS};
-            currCat = CAT_PHONICS;
-        } else {
-            availablegamescats = new int[]{CAT_NONPHONICS, CAT_PHONICS};
-        }
-
-        int PH_ON = 0;
-        int PH_OFF = 1;
-
-        MYSQLGameFiltering = true;
-        // get available sets of game ids 
-        int[] gameSets = new int[]{PH_ON, PH_OFF};
-        String gameSetsResults[] = new String[gameSets.length];
-        for (int i = 0; i < gameSets.length; i++) {
-            currGameIds = null;
-            boolean inphonics = false;
-            if (i == PH_ON) {
-                inphonics = true;
-            } else if (i == PH_OFF) {
-                inphonics = false;
-            }
-            //gather games
-            thedoloop:
-            for (int k = 0; k <= 1; k++) {
-                // if word list isn't able to be in a phonics mode, can't do any phonics-on set
-                if (inphonics && !u.inlist(availablegamescats, CAT_PHONICS)) {
-                    continue thedoloop;
-                }
-                sharkStartFrame.mainFrame.wordTree.font = null;
-                sharkStartFrame.mainFrame.currPlayTopic = t;
-                if (availablegamescats.length > 1) {
-                    currCat = inphonics ? CAT_PHONICS : CAT_NONPHONICS;
-                }
-                wordlist.usephonics = inphonics;
-                sharkStartFrame.mainFrame.wordTree.setup(t, null);
-                if (inphonics) {
-                    student.setOption("s_usephonics");
-                } else {
-                    student.clearOption("s_usephonics");
-                }
-                wordlist.splitsInDevMode = true;
-                t.getSplits();
-                int splitCountInStandard = 0;
-                for (int m = 0; t.splitwords != null && m < t.splitwords.length; m++) {
-                    String s2 = t.splitwords[m];
-                    int kk;
-                    if ((kk = s2.indexOf("=")) >= 0) {
-                        s2 = s2.substring(0, kk);
-                    }
-                    s2 = s2.replace("/", "");
-                    s2 = s2.replace(u.phonicsplits, "");
-                    for (int n = 0; n < standardWords.length; n++) {
-                        String s1 = standardWords[n].v();
-                        if (s2.equalsIgnoreCase(s1)) {
-                            splitCountInStandard++;
-                        }
-                    }
-                }
-                gotSplits = t.splitwords != null && splitCountInStandard >= 4;
-                if (gotSplits) {
-                    int g;
-                    g = 0;
-                }
-                String s = treepath;
-                sharkStartFrame.mainFrame.studentList[sharkStartFrame.mainFrame.currStudent].currTopic = s;
-                sharkStartFrame.mainFrame.setTopicList(course, jn.get().substring(1));
-                sharkStartFrame.mainFrame.setCourseListSelection(course);
-                sharkStartFrame.mainFrame.setupGametree();
-            }
-            String gamesetres = null;
-
-            int excludeGameIds[] = new int[max19CharGames.length];
-            for (int ii = 0; ii < excludeGameIds.length; ii++) {
-                excludeGameIds[ii] = getGameID(max19CharGames[ii]);
-            }
-            for (int p = 0; currGameIds != null && p < currGameIds.length; p++) {
-                if (gamesetres == null) {
-                    gamesetres = "";
-                }
-                if (currGameIds[p] == 3) {
-                    int h;
-                    h = 0;
-                } else {
-                    if (longestWord > 19 && u.inlist(excludeGameIds, currGameIds[p])) {
-                        continue;
-                    }
-                }
-                if (u.inlist(disabledGames, currGameIds[p])) {
-                    continue;
-                }
-                if (p > 0 && gamesetres.length() > 0) {
-                    gamesetres += ",";
-                }
-                gamesetres += String.valueOf(currGameIds[p]);
-            }
-            if (gamesetres != null && gamesetres.length() == 0) {
-                gamesetres = "-1";
-            }
-            gameSetsResults[i] = gamesetres;
-
-        }
-        String mergedGames = null;
-        mergedGames = mergedGameIds2(gameSetsResults[PH_ON], gameSetsResults[PH_OFF], t.singlesound);
-        String mergedRecommendedGames = getRecommededGameIds(u.splitString(mergedGames, ","), t.markgames, t.markgamescode);
-
-        // strip out games from recommended which aren't in the available games
-        String mergedGamesArray[] = u.splitString(mergedGames, ',');
-        String mergedRecommendedGamesArray[] = u.splitString(mergedRecommendedGames, ',');
-        String newRecommendedGames[] = new String[0];
-        for (int i = 0; i < mergedRecommendedGamesArray.length; i++) {
-            if (u.findString(mergedGamesArray, mergedRecommendedGamesArray[i]) >= 0) {
-                newRecommendedGames = u.addString(newRecommendedGames, mergedRecommendedGamesArray[i]);
-            }
-        }
-        mergedRecommendedGames = u.combineString(newRecommendedGames, ",");
-
-        MYSQLGameFiltering = false;
-        String keys[];
-        String vals[];
-        String phpName;
-        String isSingleSoundList = (t.phonics && !t.phonicsw) ? "1" : "0";
-        
-            keys = new String[]{"locale", "topic_name_type", "topic_teaching_note_type", "recording_standard_type", "word_split_phonic", "word_phonic_sound", "topic_block_type_standard", "topic_block_type_not_games", "topic_block_type_game", "topic_block_type_recommended_games", "topic_block_type_recommended2_games", "topic_block_type_item_word", "word_word", "game_name_type", "xml_att_recid_type", "settings", "unit_id", "wordlist_index",
-                "phonic_on_games", "phonics_off_games", "split_on_games", "split_off_games",
-                "game_ids", "recommended_game_ids", "is_single_sounds_list",
-                "teaching_note", "topic_name", "is_unit_revision", "revision", "ap_not_in_test", "ap_not_in_unit_or_test", "ap_priority", "has_standard", "has_extended"
-            };
-            vals = new String[]{LOCALE, TOPICNAME_TYPE, TOPICTEACHINGNOTE_TYPE, RECORDINGSTANDARD_TYPE, WORDSPLITPHONIC_TYPE, WORDPHONICSOUND_TYPE, TOPICBLOCKSTANDARD_TYPE, TOPICBLOCKNOTGAMES_TYPE, TOPICBLOCKGAME_TYPE, TOPICBLOCKRECOMMENDEDGAMES_TYPE, TOPICBLOCKRECOMMENDED2GAMES_TYPE, TOPICBLOCKITEMWORD_TYPE, WORDWORD_TYPE, GAMENAME_TYPE, GTX_RECUUID_AT_XML, topicSettings, String.valueOf(unit_id), String.valueOf(wordlist_index),
-                gameSetsResults[0], gameSetsResults[1], null, null,
-                mergedGames, mergedRecommendedGames, isSingleSoundList,
-                teachingNote, topicName, isUnitRevision, revision, apNotInTest, apNotInUnitOrTest, apPriority, hasStandard, hasExtended
-            };
-            
-         String placementUnitIndex = null;
-         String completedUnitIndex = null;
-         
-        if(MYSQLUpload.course.equalsIgnoreCase(WORDSHARKTESTCOURSE)){
-            int placementInt = getSharkChallengePlacementUnitIndex(unit_index, wordlist_index);
-            placementUnitIndex = placementInt < 0 ? null : String.valueOf(placementInt); 
-            
-            int completedInt = getSharkChallengeCompletedUnitIndex(unit_index, wordlist_index);
-            completedUnitIndex = completedInt < 0 ? null : String.valueOf(completedInt);
-        }
-
-            phpName = "http://localhost/so_uploadTopicAndSoundsMerged.php";
-            
-            keys = new String[]{"locale", "topic_name_type", "topic_teaching_note_type", "recording_standard_type", "word_split_phonic", "word_phonic_sound", "topic_block_type_standard", "topic_block_type_not_games", "topic_block_type_game", "topic_block_type_recommended_games", "topic_block_type_recommended2_games", "topic_block_type_item_word", "word_word", "game_name_type", "xml_att_recid_type", "settings", "unit_id", "wordlist_index",
-                "phonic_on_games", "phonics_off_games", "split_on_games", "split_off_games",
-                "game_ids", "recommended_game_ids", "is_single_sounds_list",
-                "teaching_note", "topic_name", "is_unit_revision", "revision", "ap_not_in_test", "ap_not_in_unit_or_test", "ap_priority", "has_standard", "has_extended", "placement_unit_index", "completed_unit_index"
-            };
-            vals = new String[]{LOCALE, TOPICNAME_TYPE, TOPICTEACHINGNOTE_TYPE, RECORDINGSTANDARD_TYPE, WORDSPLITPHONIC_TYPE, WORDPHONICSOUND_TYPE, TOPICBLOCKSTANDARD_TYPE, TOPICBLOCKNOTGAMES_TYPE, TOPICBLOCKGAME_TYPE, TOPICBLOCKRECOMMENDEDGAMES_TYPE, TOPICBLOCKRECOMMENDED2GAMES_TYPE, TOPICBLOCKITEMWORD_TYPE, WORDWORD_TYPE, GAMENAME_TYPE, GTX_RECUUID_AT_XML, topicSettings, String.valueOf(unit_id), String.valueOf(wordlist_index),
-                gameSetsResults[0], gameSetsResults[1], null, null,
-                mergedGames, mergedRecommendedGames, isSingleSoundList,
-                teachingNote, topicName, isUnitRevision, revision, apNotInTest, apNotInUnitOrTest, apPriority, hasStandard, hasExtended, placementUnitIndex, completedUnitIndex
-            };
-
-            String ret = uploadToService(phpName, keys, vals);    
-            try {
-                if (Integer.parseInt(ret) >= 0) {
-                    return Integer.parseInt(ret);
-                }
-            } catch (Exception ee) {
-                int gg;
-                gg = 9;
-            }
-            if (ret.startsWith("Error:")) {
-                int gg;
-                gg = 9;
-            }
-     
-
-        return -1;
-    }
-       
-    private JSONArray stringArrayToIntJsonArray(String[] stringArray){
-        JSONArray array = new JSONArray();
-        for (int i = 0; i < stringArray.length; i++) {
-            array.add(Integer.parseInt(stringArray[i]));
-        }
-        return array;
-    }
-    
-     private JSONArray stringArrayToStringJsonArray(String[] stringArray){
-        JSONArray array = new JSONArray();
-        for (int i = 0; i < stringArray.length; i++) {
-            array.add(stringArray[i]);
-        }
-        return array;
     }
       
     private int getSharkChallengePlacementUnitIndex(int unitIndex, int wordlistIndex){
@@ -1304,56 +1005,7 @@ public class MYSQLUpload {
     
     private String mergedGameIds2(String s1, String s2, boolean isSingleSound) {
         String wordlistGameIdsCsv = mergedGameIds(new String[]{s1, s2});
-        int[] singleSoundGameIdOrder = new int[]{
-            getGameID(GAME_FINDSYMBOL),
-            getGameID(GAME_SAYSOUNDSPHONICS),
-            getGameID(GAME_READINGTEST),
-            getGameID(GAME_SNAP),
-            getGameID(GAME_SHARKS),
-            getGameID(GAME_SALVAGE),
-            getGameID(GAME_SPELLTEST),
-            getGameID(GAME_MAZESPELLTEST),
-            getGameID(GAME_MOVINGSPELLCHECK),
-            getGameID(GAME_PATTERN),
-            getGameID(GAME_TRACKING),
-            getGameID(GAME_CATCHING)
-        };
-        int[] wholeWordGameIdOrder = new int[]{
-            getGameID(GAME_FINDPICTUREPHONICS),
-            getGameID(GAME_FINDWORDPHONICS),
-            getGameID(GAME_SAYSOUNDSPHONICS),
-            getGameID(GAME_SPLITSOUND),
-            getGameID(GAME_JIGSAWPHONICS),
-            getGameID(GAME_LEARNVOCAB),
-            getGameID(GAME_FINDPICTUREVOCABULARY),
-            getGameID(GAME_SAYWORDFORPICTURE),
-            getGameID(GAME_FINDPICTUREFROMWRITTEN),
-            getGameID(GAME_FINDWORD),
-            getGameID(GAME_WORDSEARCH),
-            getGameID(GAME_PAIRS),
-            getGameID(GAME_HUNT),
-            getGameID(GAME_SAYWORD),
-            getGameID(GAME_SNAP),
-            getGameID(GAME_READINGTEST),
-            getGameID(GAME_SHARKS),
-            getGameID(GAME_SHARKSALTER),
-            getGameID(GAME_SALVAGE),
-            getGameID(GAME_HELICOPTERSPELL),
-            getGameID(GAME_JUMBLED),
-            getGameID(GAME_SPELLTEST),
-            getGameID(GAME_MAZESPELLTEST),
-            getGameID(GAME_MOVINGSPELLCHECK),
-            getGameID(GAME_JIGSAWSYLLABLES),
-            getGameID(GAME_HUNTSYLLABLES),
-            getGameID(GAME_HELICOPTERLISTEN),
-            getGameID(GAME_PATTERN),
-            getGameID(GAME_TRACKING),
-            getGameID(GAME_SIMPLECROSSWORD),
-            getGameID(GAME_FINDPICTUREFORSENTENCE),
-            getGameID(GAME_SAYSENTENCE),
-            getGameID(GAME_SENTENCECROSSWORD),
-            getGameID(GAME_CATCHING)
-        };
+
         
         int[] orderedReferenceArray = isSingleSound ? singleSoundGameIdOrder : wholeWordGameIdOrder;        
         int[] orderedArray = new int[orderedReferenceArray.length];
@@ -1397,7 +1049,7 @@ public class MYSQLUpload {
                     int g;
                     g = 0;
                 }
-                int gid = getGameID(games[k].get(), String.valueOf(currCat));
+                int gid = getGameID(games[k].get());
                 if (gid < 0) {
                     int g;
                     g = 0;
@@ -1777,28 +1429,8 @@ public class MYSQLUpload {
         resGameIds = u.combineString(mgames, ",");
         return resGameIds;
     }
-
-    public void saveRecordingArrays() {
-        db.update(sharkStartFrame.optionsdb, "sql_recordingnames", uploadRecordingDetails, db.TEXT);
-
-        String ss[] = new String[]{};
-        for (int i = 0; i < uploadRecordingUUID.length; i++) {
-            ss = u.addString(ss, String.valueOf(uploadRecordingUUID[i]));
-        }
-        db.update(sharkStartFrame.optionsdb, "sql_recordinguuid", ss, db.TEXT);
-    }
-
-    public void getRecordingArrays() {
-        if (uploadRecordingDetails.length != 0) {
-            return;
-        }
-        uploadRecordingDetails = (String[]) db.find(sharkStartFrame.optionsdb, "sql_recordingnames", db.TEXT);
-        String ss[] = (String[]) db.find(sharkStartFrame.optionsdb, "sql_recordinguuid", db.TEXT);
-        for (int i = 0; i < ss.length; i++) {
-            uploadRecordingUUID = u.addint(uploadRecordingUUID, Integer.parseInt(ss[i]));
-        }
-    }
-
+    
+    
     void doImagesUpload() {
         currentEnvironment = ShowSelectEnvDialog();
         int insertItemCount = imagesUploadAction(true);
@@ -1817,11 +1449,7 @@ public class MYSQLUpload {
                 String strS3key = (String) p.get(ToolsOnlineResources.s3key);
                 String strDesktopName = (String) p.get(ToolsOnlineResources.desktopName);
                 String strIsVocab = (String) p.get(ToolsOnlineResources.vocab);
-                String strIsAnimated = (String) p.get(ToolsOnlineResources.animated);
                 String currUsed = (String) p.get(ToolsOnlineResources.currentlyUsed);
-                if (currUsed != null && currUsed.equals("false")) {
-//                    continue;
-                }
 
                 String sep = "/";
                 if (strS3key == null) {
@@ -1846,36 +1474,31 @@ public class MYSQLUpload {
                     imword = imword.substring(0, kk);
                 }
 
-                String ret = null;
-                int k = -1;
 
-                if(CURRENT_MODE == MODE_DIRECT){
-                    String s3Key = (String)p.get(ToolsOnlineResources.s3key);
-                    boolean keyExistsInDatabase = checkS3KeyExistsInDatabase(s3Key, "images");
-                    
-                    
-                    if(!keyExistsInDatabase){
-                        System.out.println(s3Key + "doesn't exist in DATABASE");
-                    }
-                    
-                    boolean keyExistsInS3 = new File(ToolsOnlineResources.imagesS3Path+s3Key).exists();    
-                    if (!keyExistsInDatabase) {
-                        System.out.println(s3Key);
-                        if(!keyExistsInS3){
-                            System.out.println(s3Key + "doesn't exist in S3");
-                        }
-                        counter++;
-                        if(!dummyRun){
-                            JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("word", u.formatTextforUpload(getStrippedSoundName(strDesktopName), CURRENT_MODE));
-                            jsonObject.put("filename", strFileName);
-                            jsonObject.put("s3key", strS3key);
-                            jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
+                String s3Key = (String)p.get(ToolsOnlineResources.s3key);
+                boolean keyExistsInDatabase = checkS3KeyExistsInDatabase(s3Key, "images");
 
-                            apiGetId(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment); 
-                        }
-                    }   
+                if(!keyExistsInDatabase){
+                    System.out.println(s3Key + "doesn't exist in DATABASE");
                 }
+                    
+                boolean keyExistsInS3 = new File(ToolsOnlineResources.imagesS3Path+s3Key).exists();    
+                if (!keyExistsInDatabase) {
+                    System.out.println(s3Key);
+                    if(!keyExistsInS3){
+                        System.out.println(s3Key + "doesn't exist in S3");
+                    }
+                    counter++;
+                    if(!dummyRun){
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("word", u.formatTextforUpload(getStrippedSoundName(strDesktopName)));
+                        jsonObject.put("filename", strFileName);
+                        jsonObject.put("s3key", strS3key);
+                        jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
+
+                        apiGetId(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment); 
+                    }
+                 }   
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1921,36 +1544,24 @@ public class MYSQLUpload {
                     g = 0;
                 }
 
-                if (strDesktopName.trim().equals("")) {
-                    continue;
-                }
-                if (strDesktopName.indexOf('_') >= 0) {
-                    continue;
-                }
-                word w = new word(strDesktopName, "publictopics");
-                String ret = null;
-                int k = -1;
-                
-                if(CURRENT_MODE == MODE_DIRECT){
-                    String s3Key = (String)p.get(ToolsOnlineResources.s3key);
-                    boolean keyExistsInDatabase = checkS3KeyExistsInDatabase(s3Key, "sounds");
-                    boolean keyExistsInS3 = new File(ToolsOnlineResources.audioS3Path+s3Key).exists();    
-                    if (!keyExistsInDatabase) {
-                        System.out.println(s3Key);
-                        if(!keyExistsInS3){
-                            System.out.println(s3Key + "doesn't exist in S3");
-                        }
-                        counter++;
-                        if(!dummyRun){
-                            JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("type", strType);
-                            jsonObject.put("word", u.formatTextforUpload(getStrippedSoundName(strDesktopName), CURRENT_MODE));
-                            jsonObject.put("filename", strFileName);
-                            jsonObject.put("s3key", strS3key);
-                            jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
+                String s3Key = (String)p.get(ToolsOnlineResources.s3key);
+                boolean keyExistsInDatabase = checkS3KeyExistsInDatabase(s3Key, "sounds");
+                boolean keyExistsInS3 = new File(ToolsOnlineResources.audioS3Path+s3Key).exists();    
+                if (!keyExistsInDatabase) {
+                    System.out.println(s3Key);
+                    if(!keyExistsInS3){
+                        System.out.println(s3Key + "doesn't exist in S3");
+                    }
+                    counter++;
+                    if(!dummyRun){
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("type", strType);
+                        jsonObject.put("word", u.formatTextforUpload(getStrippedSoundName(strDesktopName)));
+                        jsonObject.put("filename", strFileName);
+                        jsonObject.put("s3key", strS3key);
+                        jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
 
-                            apiGetId(API_CONFIGS[currentEnvironment].url + "sounds", jsonObject.toString(), currentEnvironment);                
-                        }
+                        apiGetId(API_CONFIGS[currentEnvironment].url + "sounds", jsonObject.toString(), currentEnvironment);                
                     }
                 }
             }
@@ -2003,20 +1614,8 @@ public class MYSQLUpload {
                 u.okmess(shark.programName, "Issue with Mark Games Code: " + s, sharkStartFrame.mainFrame);
             }
         }
-        int gg = 0;
-        int hr = -1;
-        int hr2 = -1;
 
-        if ((hr = getRecordingWordID("head" + "=", false)) >= 0) {
-            int ff;
-            ff = 9;
-        }
-        if ((hr2 = getRecordingWordID("head", false)) >= 0) {
-            int ff;
-            ff = 9;
-        }
-
-        int i, n;
+        int n;
         jnode sel[] = topicTreeList.getSelectedNodes();//The games are not playable AND pictures will not show when words are spoken
         if (sel == null || sel.length == 0) //If 1.1
         {
@@ -2040,10 +1639,7 @@ public class MYSQLUpload {
                 sscourses = u.addString(sscourses, nodename);
             }
         }
- //       if (sscourses.length != ALL_COURSES.length) {
- //           u.okmess(shark.programName + " Bad Courses", "Wrong number of courses", sharkStartFrame.mainFrame);
- //           return;
- //       }
+
         String ssproblemcourses[] = new String[]{};
         for (int ic = 0; ic < ALL_COURSES.length; ic++) {
             if (u.findString(sscourses, ALL_COURSES[ic]) < 0) {
@@ -2079,17 +1675,7 @@ public class MYSQLUpload {
             topicScan(topicTreeList, sel[n], n, courseids, coursenames);
         }
 
-        long timetaken = Calendar.getInstance().getTimeInMillis() - MYSQLUpload.startTime;
-
-        String str = String.valueOf(java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(timetaken));
-        doingPort = false;
-
-        for (int index = 0; index < apiCalls.length; ++index) {          
-            System.out.println("api calls :" + apiCalls[index]);
-        }
-        if(CURRENT_MODE == MODE_VIA_DUMP){
-            u.okmess(shark.programName, "Finished in : " + str + " minutes.", sharkStartFrame.mainFrame);         
-        }        
+        doingPort = false;    
     }
     
     
@@ -2108,194 +1694,6 @@ public class MYSQLUpload {
         }
         else if(checkbox_live.isSelected()){
             return ENV_LIVE;
-        }
-        return -1;
-    }
-
-    int UploadWord2(String topicID, String isStandard, String isExcluded, String plainword, String fullword, String patternword, String definition, String soundName, String imageNameWS, String imageNamePhoto, String homophoneName, String splitsounds) {
-        int k = -1;
-        String ret = "";
-        fullword = fullword.replace("@", "");
-        try {
-            if (topicID.equals("0")) {
-                int g;
-                g = 0;
-            }
-                
-               ret = uploadToService("http://localhost/so_uploadWord2.php",
-                    new String[]{"topic_id", "is_standard",
-                        "is_excluded", "plain_word", "full_word", "pattern_word", "definition", "sound_name", "image_ws_name", "image_photo_name",
-                        "homophone_name", "sound_splits"},
-                    new String[]{topicID, isStandard,
-                        isExcluded, u.formatTextforUpload(plainword, CURRENT_MODE), u.formatTextforUpload(fullword, CURRENT_MODE), u.formatTextforUpload(patternword, CURRENT_MODE), definition,
-                        soundName, imageNameWS, imageNamePhoto, homophoneName, splitsounds}
-                );        
-               
-
-            if (ret.startsWith("Error:")) {
-                int gg;
-                gg = 9;
-                return -1;
-            }
-            k = Integer.parseInt(ret);
-        } catch (Exception e) {
-            int ff;
-            ff = 99;
-        }
-
-        return k;
-    }
-
-    public void UploadTopicRest(String xmlForTopic, String topicName, int id, String gameOptions) {
-        if (!uploadStageUploadRest) {
-            return;
-        }
-        if (u.inlist(topicIdsDoneForRest, id)) {
-            return;
-        }
-        topicIdsDoneForRest = u.addint(topicIdsDoneForRest, id);
-        if (topicName.equals("tch for year 1")) {
-            int f;
-            f = 9;
-        }
-        writeRestXML(topicName, xmlForTopic);
-        if (topicName.equals("tch for year 1")) {
-            int f;
-            f = 9;
-        }
-
-        if (topicName.equals("decide to double/ no doubling")) {
-            int gg;
-            gg = 9;
-        }
-        if (topicName.equals("garbage")) {
-            return;
-        }
-        System.out.println("Topic rest:" + "  " + topicName);
-
-        if (topicName.equals("- air -")) {
-            int gg;
-            gg = 9;
-        }
-        String ret = null;
-            ret = uploadToService("http://localhost/so_uploadTopicRest.php",
-                new String[]{
-                    "topic_xml",
-                    "topic_block_extended",
-                    "topic_block_pairs",
-                    "topic_block_distractor_phonic_sounds",
-                    "topic_block_game",
-                    "xml_topic",
-                    "xml_topic_block",
-                    "xml_topic_blocks",
-                    "xml_topic_reference",
-                    "xml_topic_references",
-                    "xml_topic_sentence",
-                    "xml_topic_sentences",
-                    "xml_select",
-                    "xml_pairs",
-                    "xml_att_btopic_uuid",
-                    "xml_att_tbtype",
-                    "xml_att_select_no",
-                    "xml_att_select_group_no",
-                    "xml_att_sent_text",
-                    "game_options"
-
-                },
-                new String[]{
-                    xmlForTopic,
-                    TOPICBLOCKEXTENDED_TYPE,
-                    TOPICBLOCKPAIRS_TYPE,
-                    TOPICBLOCKDISTRACTORPHONICSOUNDS_TYPE,
-                    TOPICBLOCKGAME_TYPE,
-                    GTX_TOPICROOT_XML,
-                    GTX_TB_XML,
-                    GTX_TBS_XML,
-                    GTX_REFERENCE_XML,
-                    GTX_REFERENCES_XML,
-                    GTX_SENTENCE_XML,
-                    GTX_SENTENCES_XML,
-                    GTX_SELECT_XML,
-                    GTX_PAIRS_XML,
-                    GTX_TOPICUUID_AT_XML,
-                    GTX_TB_TYPE_AT_XML,
-                    GTX_SELECTNO_AT_XML,
-                    GTX_SELECTGROUPNO_AT_XML,
-                    GTX_SENTENCE_TEXT_AT_XML,
-                    gameOptions
-                }
-            );
-            if (ret.startsWith("Error:")) {
-                int gg;
-                gg = 9;
-            }
-            if (!ret.equals("0")) {
-                int d;
-                d = 9;
-            }
-
-
-        int g;
-        g = 9;
-    }
-
-    public static int UploadWord(word w, topic tt, String xmlForTopic, boolean overrideblock) {
-        if (true || !overrideblock && !uploadStageUploadWords) {
-            return -1;
-        }
-        String word = u.formatTextforUpload(w.value, CURRENT_MODE);
-        int recordingid = getRecordingWordID(w.vsay(), tt.fl);
-        if (w.phonics && !w.phonicsw) {
-
-        } else {
-            if (recordingid < 0) {
-                int gg;
-                gg = 9;
-            }
-        }
-        String ret = null;
-
-        if (!generateImageFiles) {
-            int topicUUID = uploadTopicUUID[u.findString(uploadTopicNames, tt.name)];
-            try {
-                ret = uploadToService("http://localhost/so_uploadWord.php",
-                        new String[]{"topic_id", "topic_xml", "word_phonic_split_type", "word_phonic_syllable_split_type", "word_syllable_split_type", "word_phonic_split_sound", "word_syllable_split_sound", "word_root_type", "word_suffix_type", "recording_id", "locale"},
-                        new String[]{String.valueOf(topicUUID), xmlForTopic, WORDSPLITPHONIC_TYPE, WORDSPLITPHONICSYLL_TYPE, WORDSPLITSYLL_TYPE, WORDPHONICSOUND_TYPE, WORDPHONICSYLLSOUND_TYPE, WORDCOMPONENTROOT_TYPE, WORDCOMPONENTSUFFIX_TYPE, recordingid >= 0 ? String.valueOf(recordingid) : null, LOCALE});
-                int f;
-                f = 9;
-            } catch (Exception e) {
-                int ff;
-                ff = 99;
-            }
-        } else {
-            ret = "";
-        }
-        System.out.println("Word :" + word + "  " + ret);
-        if (ret.startsWith("Error:")) {
-            int gg;
-            gg = 9;
-            return -1;
-        }
-        if (!generateImageFiles && u.findString(uploadWordXml, xmlForTopic) < 0) {
-            if (uploadWordXml.length != uploadWordUUID.length) {
-                int gg;
-                gg = 9;
-            }
-            int addedi = -1;
-            try {
-                uploadWordXml = u.addString(uploadWordXml, xmlForTopic);
-                addedi = Integer.parseInt(ret);
-                uploadWordUUID = u.addint(uploadWordUUID, addedi);
-                writeWordsXML(w, word, String.valueOf(addedi), xmlForTopic);
-                if (uploadWordXml.length != uploadWordUUID.length) {
-                    int gg;
-                    gg = 9;
-                }
-            } catch (Exception ee) {
-                int gg;
-                gg = 9;
-            }
-            return addedi;
         }
         return -1;
     }
@@ -2461,99 +1859,6 @@ public class MYSQLUpload {
         }
     }
 
-    // not doing svg anymore so this must change
-    public static void UploadImage(String picName) {
-        if (!uploadStageUploadWords) {
-            return;
-        }
-
-        currSaveSharkImage = null;
-        sharkImage im = sharkImage.find(picName);
-        String image = null;
-        String shash = null;
-        if (im != null && currSaveSharkImage != null && u.findString(saveImageHashes, (shash = getHashOfSaveImage(currSaveSharkImage))) < 0) {
-            if (generateImageFiles) {
-                String[] ss = null;
-                if (ss != null) {
-                    image = combineStringArray(ss);
-                }
-                if (image != null) {
-                    writeToSVGImageFile(picName, shash, image);
-                }
-            } else {
-                image = getSVGViaFileFromHash(picName, shash);
-            }
-        }
-        if (!uploadImages) {
-            return;
-        }
-
-        if (image == null) {
-            return;
-        }
-        if (u.findString(uploadWordSVG, shash) < 0) {
-            String ret = null;
-            image = u.formatTextforUpload(image, CURRENT_MODE);
-            try {
-                ret = uploadToService("http://localhost/so_uploadImage.php",
-                        new String[]{"image_name", "image_type", "image_content", "image_svg_type", "image_bmp_type", "locale"},
-                        //      new String[]{u.formatTextforUpload(stripAts(picName)), IMAGE_TYPES[IMAGE_SVG_TYPE], image, IMAGE_TYPES[IMAGE_SVG_TYPE], IMAGE_TYPES[IMAGE_BMP_TYPE], LOCALE});
-                        new String[]{u.formatTextforUpload(stripAts(picName), CURRENT_MODE), IMAGE_TYPES[IMAGE_SVG_TYPE], getSVGPathFile(picName, shash), IMAGE_TYPES[IMAGE_SVG_TYPE], IMAGE_TYPES[IMAGE_BMP_TYPE], LOCALE});
-                int f;
-                f = 9;
-            } catch (Exception e) {
-                int ff;
-                ff = 99;
-            }
-            System.out.println("Image :" + "  " + ret);
-            if (ret == null) {
-                return;
-            }
-            if (ret.trim().equals("")) {
-                return;
-            }
-            if (ret.startsWith("Error:")) {
-                System.out.println("****************************************SVGIMAGEERROR: " + picName);
-                return;
-            }
-
-            uploadWordSVG = u.addString(uploadWordSVG, shash);
-            uploadWordSVGUUID = u.addint(uploadWordSVGUUID, Integer.parseInt(ret));
-
-            // is there a photo too?
-            String imid = getImageFileIdentifierForWord(picName);
-            if (imid != null && (u.findString(uploadWordBMPIdentifier, imid) < 0)) {
-
-                String ret2 = null;
-                try {
-                    ret2 = uploadToService("http://localhost/so_uploadImage.php",
-                            new String[]{"image_name", "image_type", "image_content", "image_svg_type", "image_bmp_type", "locale"},
-                            new String[]{stripAts(picName), IMAGE_TYPES[IMAGE_BMP_TYPE], getImageFileWebPathForWord(picName), IMAGE_TYPES[IMAGE_SVG_TYPE], IMAGE_TYPES[IMAGE_BMP_TYPE], LOCALE});
-                    int ff;
-                    ff = 9;
-                } catch (Exception e) {
-                    int ff;
-                    ff = 99;
-                }
-                if (ret == null) {
-                    return;
-                }
-                if (ret.trim().equals("")) {
-                    return;
-                }
-                if (ret2.startsWith("Error:")) {
-                    System.out.println("****************************************BMPIMAGEERROR: " + picName);
-                    return;
-                }
-
-                uploadWordBMPIdentifier = u.addString(uploadWordBMPIdentifier, imid);
-                uploadWordBMPUUID = u.addint(uploadWordBMPUUID, Integer.parseInt(ret2));
-
-            }
-
-        }
-
-    }
 
     static String getHashUUID(String s) {
         return String.valueOf(s.hashCode());
@@ -2570,46 +1875,27 @@ public class MYSQLUpload {
         return h;
     }
 
-    public void UploadRudeWords(String ss[]) {
-        for (int i = 0; i < ss.length; i++) {
-            String ret = null;
-            try {
-                ret = uploadToService("http://localhost/so_uploadRudeWords.php",
-                        new String[]{"word"},
-                        new String[]{ss[i]});
-                int f;
-                f = 9;
-            } catch (Exception e) {
-                int ff;
-                ff = 99;
-            }
-            if (ret.startsWith("Error:")) {
-                int gg;
-                gg = 9;
-
+//    String getGameIDFromNames(int staticGameIDs[], String staticGameNames[], String staticGameSubNames[], String gamename, String gamesubname) {
+//        for (int i = 0; i < staticGameNames.length; i++) {
+//            if (gamename.equalsIgnoreCase(staticGameNames[i]) && gamesubname.equals(staticGameSubNames[i])) {
+//                return String.valueOf(staticGameIDs[i]);
+//            }
+//        }
+//        return null;
+//    }
+    
+    String getCourseIDFromNames(int staticCourseIDs[], String staticCourseNames[], String coursename) {
+        for (int i = 0; i < staticCourseNames.length; i++) {
+            if (coursename.equalsIgnoreCase(staticCourseNames[i])) {
+                return String.valueOf(staticCourseIDs[i]);
             }
         }
+        return null;
     }
-
-    public void UploadUSSpelling(String ss[]) {
-
-        for (int i = 0; i < ss.length; i++) {
-            String ret = null;
-            try {
-                ret = uploadToService("http://localhost/so_uploadUSSpelling.php",
-                        new String[]{"uk_word", "us_word"},
-                        new String[]{ss[0], ss[1]});
-                int f;
-                f = 9;
-            } catch (Exception e) {
-                int ff;
-                ff = 99;
-            }
-        }
-
-    }
-
-    public void UploadGames(boolean wantUpdate) {
+    
+    
+    /*
+     public void UploadGames(boolean wantUpdate) {
 
         String staticGameNames[] = new String[]{};
         String staticGameSubNames[] = new String[]{};
@@ -2657,7 +1943,6 @@ public class MYSQLUpload {
         for (Enumeration e = gametree.children(); e.hasMoreElements();) {
             jnode c = (jnode) e.nextElement();
             String s = c.get();
-            int headingindex = 0;
 
             // main category
             if (s.equalsIgnoreCase(REWARDS)) {
@@ -2667,12 +1952,6 @@ public class MYSQLUpload {
             loop2:
             for (Enumeration e2 = c.children(); e2.hasMoreElements();) {
                 jnode c2 = (jnode) e2.nextElement();
-                String gameHeading = c2.get();
-                if (gameHeading.equalsIgnoreCase("Sound & letter patterns")) {
-                    int gg;
-                    gg = 0;
-                }
-                int gameunderheadingindex = 0;
 
                 loop3:
                 for (Enumeration e3 = c2.children(); e3.hasMoreElements();) {
@@ -2680,15 +1959,15 @@ public class MYSQLUpload {
                     String game = c3.get();
 
                     DocumentBuilderFactory docFactory = null;
-                    DocumentBuilder docBuilder = null;
+
                     Document doc = null;
-                    Element rootElement = null;
+
 
                     DocumentBuilderFactory docFactory2 = null;
                     DocumentBuilder docBuilder2 = null;
                     Document doc2 = null;
                     Element rootElement2 = null;
-                    gameunderheadingindex++;
+
 
                     // the games LIST OF GAMES
                     loop4:
@@ -2709,11 +1988,10 @@ public class MYSQLUpload {
                                 jsonValues = u2_base.addObjects(jsonValues, vals);
                             }
 
-                            String gametype = GAMETYPERECOGNITION;
+
                             String gametooltip = null;
                             String gametooltiph = null;
-                            String gameid = null;
-                            String gameOptionJson = null;
+
 
                             // game parameters
                             loop5:
@@ -2741,7 +2019,7 @@ public class MYSQLUpload {
                                 }
 
                                 if (preparam != null && preparam.equalsIgnoreCase("id") && u.findString(PHONICDISTRACTOR_GAMECODEID, endparam) >= 0) {
-                                    gameid = endparam;
+
                                     gameparameter = "usesphonicdistractors";
                                 }
 
@@ -2773,14 +2051,6 @@ public class MYSQLUpload {
                                         topicflag.setAttributeNode(attr);
                                     }
 
-                                } else if (gameparameter.equalsIgnoreCase("spelling")) {
-                                    gametype = GAMETYPESPELLING;
-                                } else if (gameparameter.equalsIgnoreCase("recognition")) {
-                                    gametype = GAMETYPERECOGNITION;
-                                } else if (gameparameter.equalsIgnoreCase("alphabet")) {
-                                    gametype = GAMETYPEALPHABET;
-                                } else if (preparam != null && preparam.equalsIgnoreCase("id")) {
-                                    gameid = endparam;
                                 } else if (preparam != null && preparam.equalsIgnoreCase("tooltip")) {
                                     gametooltip = endparam;
                                 } else if (preparam != null && preparam.equalsIgnoreCase("tooltiph")) {
@@ -2803,12 +2073,7 @@ public class MYSQLUpload {
                                     }
 
                                 }
-                            }
-
-                            if (jsonKeys.length > 0 && jsonValues.length > 0) {
-                                gameOptionJson = getSingleArrayJson(jsonKeys, jsonValues);
-                            }
-                            String xmltopicflagres = null;
+                            };
 
                             if (docFactory != null) {
                                 try {
@@ -2834,7 +2099,6 @@ public class MYSQLUpload {
                                     Transformer transformer = tf.newTransformer();
                                     transformer.transform(domSource, result);
                                     writer.flush();
-                                    xmltopicflagres = writer.toString();
                                 } catch (TransformerException ex) {
                                     ex.printStackTrace();
                                 }
@@ -2859,82 +2123,41 @@ public class MYSQLUpload {
                                 gamesubname = gamename.substring(k).trim();
                                 gamename = gamename.substring(0, k).trim();
                             }
-                            String iconImageExt = ".gif";
-                            String s3BucketName = "gameicons";
-                            String iconImagePath = s3BucketName + "/" + s3BucketName.toUpperCase() + "_" + tor.getImageS3Name(null, gamename, null, s3BucketName) + iconImageExt;
-                            iconImagePath = "game-bg-5_03.png";
-                            String settings = "{\"beep\": false, \"speed\": \"1\", \"tiles\": true, \"complexity\": \"1\"}";
-
-                            String gameId = getGameIDFromNames(staticGameIDs, staticGameNames, staticGameSubNames, gamename, gamesubname == null ? "" : gamesubname);
-                            if (gameId == null) {
-                                int g;
-                                g = 9;
-                            }
-
-                            int g = Integer.parseInt(gameId);
-                            if (wantUpdate) {
-                                try {
-                                    String res = uploadToService("http://localhost/so_uploadGames.php",
-                                            new String[]{"game_id", "settings", "program_name", "game_name", "game_sub_name", "game_description", "game_description2", "game_code", "game_educational_type", "game_index_no_in_heading", "category_flag", "category_flag_condition", "heading_display_name", "heading_index_no", "heading_grouping", "options_xml", "topic_flags_xml", "locale", "game_description_type", "game_name_type", "icon_image_path"},
-                                            new String[]{gameId, settings, shark.programName, u.formatTextforUpload(gamename, CURRENT_MODE), gamesubname == null ? "" : u.formatTextforUpload(gamesubname, CURRENT_MODE), u.formatTextforUpload(u.setTextHtmlFormattedForUpload2(gametooltip, CURRENT_MODE),CURRENT_MODE), u.formatTextforUpload(u.setTextHtmlFormattedForUpload2(gametooltiph, CURRENT_MODE),CURRENT_MODE), gameid, gametype, String.valueOf(gameunderheadingindex), s, TOPICFLAGCONDITION_OK, u.formatTextforUpload(gameHeading, CURRENT_MODE), String.valueOf(headingindex), GAMEHEADINGFLAG, gameOptionJson, xmltopicflagres, LOCALE, GAME_DESCRIPTION_TYPE, GAME_NAME_TYPE, iconImagePath});
-
-                                    g = Integer.parseInt(res);
-                                } catch (Exception ee) {
-                                    g = 0;
-                                }
-
-                                if (g < 0) {
-                                    int h;
-                                    h = 0;
-                                }
-                            }
-
-                            gameNames = u.addString(gameNames, origamename);
-                            gameCategory = u.addString(gameCategory, String.valueOf(index));
-                            gameID = u.addint(gameID, g);
+//                            String gameId = getGameIDFromNames(staticGameIDs, staticGameNames, staticGameSubNames, gamename, gamesubname == null ? "" : gamesubname);
+//                            if (gameId == null) {
+//                                System.out.println("Game ID is null");
+//                                System.exit(0);
+//                            }
+//                            int g = Integer.parseInt(gameId);
+//                            gameNames = u.addString(gameNames, origamename);
+//                            gameCategory = u.addString(gameCategory, String.valueOf(index));
+//                            gameID = u.addint(gameID, g);
                             continue loop4;
                         }
                     }
                 }
-                headingindex++;
             }
             index++;
         }
         int g;
         g = 0;
-    }
+    }   
+    
+    */
 
-    String getGameIDFromNames(int staticGameIDs[], String staticGameNames[], String staticGameSubNames[], String gamename, String gamesubname) {
-        for (int i = 0; i < staticGameNames.length; i++) {
-            if (gamename.equalsIgnoreCase(staticGameNames[i]) && gamesubname.equals(staticGameSubNames[i])) {
-                return String.valueOf(staticGameIDs[i]);
-            }
-        }
-        return null;
-    }
-
-    String getCourseIDFromNames(int staticCourseIDs[], String staticCourseNames[], String coursename) {
-        for (int i = 0; i < staticCourseNames.length; i++) {
-            if (coursename.equalsIgnoreCase(staticCourseNames[i])) {
-                return String.valueOf(staticCourseIDs[i]);
-            }
-        }
-        return null;
-    }
-
-    static int getGameID(String name, String category) {
-        for (int i = 0; i < gameNames.length; i++) {
-            if (gameNames[i].equalsIgnoreCase(name) && gameCategory[i].equals(category)) {
-                return gameID[i];
-            }
-        }
-        return -1;
-    }
+//    static int getGameID(String name, String category) {
+//        for (int i = 0; i < gameNames.length; i++) {
+//            if (gameNames[i].equalsIgnoreCase(name) && gameCategory[i].equals(category)) {
+//                return gameID[i];
+//            }
+//        }
+//        return -1;
+//    }
 
     static int getGameID(String fullNameIncludingSubName) {
-        for (int i = 0; i < gameNames.length; i++) {
-            if (gameNames[i].equalsIgnoreCase(fullNameIncludingSubName)) {
-                return gameID[i];
+        for (int i = 0; i < allGameNames.length; i++) {
+            if (allGameNames[i].equalsIgnoreCase(fullNameIncludingSubName)) {
+                return allGameIDs[i];
             }
         }
         return -1;
@@ -2945,8 +2168,8 @@ public class MYSQLUpload {
         String ret[] = new String[]{};
         for (int i = 0; i < ss.length; i++) {
 
-            int y = u.inintlist(gameID, Integer.parseInt(ss[i]));
-            ret = u.addString(ret, gameNames[y]);
+            int y = u.inintlist(allGameIDs, Integer.parseInt(ss[i]));
+            ret = u.addString(ret, allGameNames[y]);
         }
         return ret;
     }
@@ -2996,45 +2219,6 @@ public class MYSQLUpload {
         return sbf.toString();
     }
 
-    static void writeRestXML(String topicName, String xml) {
-        if (!restXML) {
-            return;
-        }
-        File f = new File(RESTXMLFOLDER + shark.sep + formatForFileWrite(topicName) + ".xml");
-        File fp = new File(RESTXMLFOLDER);
-        if (!fp.exists()) {
-            fp.mkdirs();
-        }
-        if (!f.exists()) {
-            PrintWriter pw = null;
-            try {
-                pw = new PrintWriter(new FileWriter(f.getAbsolutePath()));
-                pw.println(xml);
-                pw.flush();
-            } catch (Exception e) {
-            }
-        }
-    }
-
-    static void writeWordsXML(word w, String wordname, String wordid, String xml) {
-        if (!restXML) {
-            return;
-        }
-        File f = new File(WORDSXMLFOLDER + shark.sep + w.v() + "_" + wordid + formatForFileWrite(wordname) + ".xml");
-        File fp = new File(WORDSXMLFOLDER);
-        if (!fp.exists()) {
-            fp.mkdirs();
-        }
-        if (!f.exists()) {
-            PrintWriter pw = null;
-            try {
-                pw = new PrintWriter(new FileWriter(f.getAbsolutePath()));
-                pw.println(xml);
-                pw.flush();
-            } catch (Exception e) {
-            }
-        }
-    }
 
     static String formatForFileWrite(String wordname) {
         wordname = wordname.replaceAll("/", "-");
@@ -3072,6 +2256,7 @@ public class MYSQLUpload {
 
     public void topicScan(topicTree topicTreeList, jnode selnode, int p, String courseids[], String coursenames[]) {
         currentCourse = selnode.get();
+        MYSQLGameFiltering = true;
         long portStartTime = Calendar.getInstance().getTimeInMillis();
         String parentCourseID = null;
         String parentName = null;
@@ -3095,6 +2280,8 @@ public class MYSQLUpload {
         int lastUnitId = -1;
         int lastUnitIndex = -1;
         int lasttopicindex = 0;
+        
+        clearJson();
 
         boolean firstone = true;
         enumloop:
@@ -3128,12 +2315,8 @@ public class MYSQLUpload {
                 } else if (id == levelStart) {
                     hhid = null;
                 }
-                int parentHeadingID = UploadTopicHeading(u.formatTextforUpload(sh, CURRENT_MODE), String.valueOf(lastUnitIndex), parentCourseID, parentName, hhid, MYSQLUpload.TOPIC_HEADING_NAME_TYPE,
+                int parentHeadingID = UploadTopicHeading(u.formatTextforUpload(sh), String.valueOf(lastUnitIndex), parentCourseID, parentName, hhid, MYSQLUpload.TOPIC_HEADING_NAME_TYPE,
                         MYSQLUpload.LOCALE, unitType, "dummy description");
-                if (uploadStageUploadTopicToHeading) {
-                    System.out.println("****    " + u.formatTextforUpload(sh, CURRENT_MODE) + "   " + String.valueOf(lastUnitIndex) + "    " + parentCourseID + "     " + hhid);
-                }
-
 
                 lastUnitId = parentHeadingID;
                 lasttopicindex = 0;
@@ -3156,79 +2339,25 @@ public class MYSQLUpload {
                 String topicName = stripAts(st1.curr.names[0]);
                 t = topic.findtopic(topicName);
                 t.getWords(null, false);
-                if(CURRENT_MODE == MODE_VIA_DUMP){
-                    int repeatval = u.findString(MYSQLUpload.uploadTopicNames, nam);
-                    if (repeatval >= 0) {
-                        repeatval = MYSQLUpload.uploadTopicUUID[repeatval];
-                    }
-
-                    String teachingNote = getTopicXML2(st1, GTX_TEACHINGNOTE, false);
-                    teachingNote = u.formatTextforUpload(teachingNote,CURRENT_MODE);
-                    topicName = u.formatTextforUpload(topicName,CURRENT_MODE);
-                    String revision = getTopicXML2(st1, GTX_REVISION, true);
-                    String apNotInTest = getTopicXML2(st1, topic.types[topic.APNOTINTEST], true);
-                    String apNotInUnitOrTest = getTopicXML2(st1, topic.types[topic.APNOTINUNITORTEST], true);
-                    String apPriority1 = getTopicXML2(st1, topic.types[topic.APPRIORITY1], true);
-                    String apPriority2 = getTopicXML2(st1, topic.types[topic.APPRIORITY2], true);
-                    String apPriority = "0";
-                    if (apPriority1.equals("1")) {
-                        apPriority = "1";
-                    }
-                    if (apPriority2.equals("1")) {
-                        apPriority = "2";
-                    }
-                    String settingKeys[] = new String[]{"Homophones", "InOrder", "ForcePhonics", "DisablePhonics", "StartPhonics", "Nonsense"};
-                    String settingValues[] = getTopicSettings(topicTreeList, null, st1, -1);
-
-                    phonicshomo_on = (t.phonics && !t.phonicsw && t.singlesound);
-                    if (phonicshomo_on) {
-                        settingValues[0] = "1";  // the homophone setting
-                    }
-
-                    word allword[] = t.getAllWords(false, true);
-                    allword = u.addWords(allword, t.getAllWords(true, true));
-                    longestWord = getLongestWord(allword);
-                    word[] wa = t.getAllWords(false, true);
-                    String hasStandard = wa.length > 0 ? "1" : "0";
-                    String hasExtended = t.canextend() ? "1" : "0";
-
-                    String isUnitRevision = t.unitrevision ? "1" : "0";
-
-                    String topicSettings = getSingleArrayJson(settingKeys, settingValues);
-                    int topicID = UploadTopicAndSounds(t, topicSettings, lastUnitId, lastUnitIndex, lasttopicindex, selnode.get(), jn, topicTreeList.getCurrentTopicPath(),
-                            teachingNote, topicName, isUnitRevision, revision, apNotInTest, apNotInUnitOrTest, apPriority, hasStandard, hasExtended);
-
-
-                    String thexml = getTopicXML(topicTreeList, jn, st1, topicID);
-                    String gameOptions = doGameOptions(st1);
-
-                    if (thexml != null) {
-                        UploadTopicRest(thexml, nam, topicID, gameOptions);
-                        lasttopicindex++;
-                    } else {
-                        int g;
-                        g = 0;
-                    }
-                 }       
-                else{
-                    treeDetails tree = new treeDetails(
-                        t ,
-                        st1,
-                        topicTreeList,
-                        jn
-                    );
+  
+                treeDetails tree = new treeDetails(
+                    t ,
+                    st1,
+                    topicTreeList,
+                    jn
+                );
                     
-                    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-                    System.out.println(timeStamp + " Starting: " + t.name);
-                    JSONObject postJsonObject = new JSONObject();
-                    postJsonObject.put("json_data", getTopicJsonForUpload(tree, lastUnitId, lasttopicindex, selnode.get()));
-                    wordlistDoneCount++;
-                    writeJson(t.name, postJsonObject.toJSONString());
-                    int g = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/wordlist",
-                        postJsonObject.toString(), currentEnvironment);
-                    lasttopicindex++;
-                    System.out.println("....Finished: " + String.valueOf(g) + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
-                }
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+                System.out.println(timeStamp + " Starting: " + t.name);
+                JSONObject postJsonObject = new JSONObject();
+                postJsonObject.put("json_data", getTopicJsonForUpload(tree, lastUnitId, lasttopicindex, selnode.get()));
+                wordlistDoneCount++;
+                writeJson(t.name, postJsonObject.toJSONString());
+                int g = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/wordlist",
+                    postJsonObject.toString(), currentEnvironment);
+                lasttopicindex++;
+                System.out.println("....Finished: " + String.valueOf(g) + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
+
             }
         }
         
@@ -3240,14 +2369,6 @@ public class MYSQLUpload {
         else{
             u.okmess(shark.programName, "Failed in : " + str + " minutes.", sharkStartFrame.mainFrame);          
         }
-    }
-
-    public static int getTopicID(String topic) {
-        int k;
-        if ((k = getTopicID2(topic)) < 1 && uploadStageUploadRest && topic.endsWith("+")) {
-            k = getTopicID2(topic.substring(0, topic.length() - 1));
-        }
-        return k;
     }
 
     public String getSingleArrayJson(String keys[], Object values[]) {
@@ -3284,144 +2405,6 @@ public class MYSQLUpload {
             }
         }
         return objectmain.toJSONString();
-    }
-
-    public static int getTopicID2(String topic) {
-        if (!uploadStageUploadRest && !uploadStageUploadTopicToHeading) {
-            return -1;
-        }
-        int k;
-        try {
-            if ((k = u.findString(uploadTopicNames, topic)) >= 0) {
-                return uploadTopicUUID[k];
-            }
-        } catch (Exception e) {
-            int gg;
-            gg = 9;
-        }
-        return -1;
-    }
-
-    public static int getWordID(String word) {
-        if (!uploadStageUploadRest) {
-            return -1;
-        }
-        int k;
-        try {
-            if ((k = u.findString(uploadWordXml, word)) >= 0) {
-                return uploadWordUUID[k];
-            }
-        } catch (Exception e) {
-            int gg;
-            gg = 9;
-        }
-        return -1;
-    }
-
-    public static int getImageID(String word) {
-        if (!uploadImages) {
-            return 1;
-        }
-        if (!uploadStageUploadRest) {
-            return -1;
-        }
-        currSaveSharkImage = null;
-        sharkImage im = sharkImage.find(word);
-        String shash = null;
-        if (im != null && currSaveSharkImage != null) {
-            shash = getHashOfSaveImage(currSaveSharkImage);
-            int k;
-            try {
-                if ((k = u.findString(uploadWordSVG, shash)) >= 0) {
-                    return uploadWordSVGUUID[k];
-                }
-            } catch (Exception e) {
-                int gg;
-                gg = 9;
-            }
-        }
-        return -1;
-    }
-
-    public static int getRecordingSoundID(String soundname) {
-        String datab = "publicsay1";
-        int k;
-        if ((k = u.findString(uploadRecordingDetails, makeRecordingDetails(getSoundDbType(datab), soundname))) >= 0) {
-            return uploadRecordingUUID[k];
-        }
-        return -1;
-
-    }
-
-    String[] getRecordingWordID2(word w, boolean isFL) {
-        String word = w.vsay();
-        if (w.phonics && !w.phonicsw) {
-            word = w.phonics()[0] + "~";
-        }
-        String datab = null;
-        if (isFL) {
-            datab = "publicsay3";
-        }
-        for (int i = 0; i < sharkStartFrame.publicSoundLib.length; ++i) {
-            if (db.query(sharkStartFrame.publicSoundLib[i], word, db.WAV) >= 0) {
-                datab = (new File(sharkStartFrame.publicSoundLib[i])).getName();
-                break;
-            }
-        }
-        if (datab == null) {
-            return null;
-        }
-        if (db.query(datab, word, db.WAV) < 0) {
-            return null;
-        }
-        return new String[]{word.toLowerCase(), datab};
-    }
-
-    public static int getRecordingWordID(String word, boolean isFL) {
-        word w = new word(word, "publictopics");
-        String name1;
-        if (word.endsWith("=")) {
-            name1 = word;
-        } else {
-            name1 = w.vsay();
-        }
-        String datab = null;
-        if (isFL) {
-            datab = "publicsay3";
-        }
-        for (int i = 0; i < sharkStartFrame.publicSoundLib.length; ++i) {
-            if (db.query(sharkStartFrame.publicSoundLib[i], name1, db.WAV) >= 0) {
-                datab = (new File(sharkStartFrame.publicSoundLib[i])).getName();
-                break;
-            }
-        }
-        if (datab == null) {
-            return -1;
-        }
-        if (db.query(datab, name1, db.WAV) < 0) {
-            return -1;
-        }
-        int k;
-        if ((k = u.findString(uploadRecordingDetails, makeRecordingDetails(getSoundDbType(datab), name1))) >= 0) {
-            return uploadRecordingUUID[k];
-        }
-        return -1;
-    }
-
-    public static int getImageBMPID(String id) {
-        if (!uploadImages || !uploadStageUploadRest) {
-            return -1;
-        }
-        int k;
-        try {
-            if ((k = u.findString(uploadWordBMPIdentifier, id)) >= 0) {
-                return uploadWordBMPUUID[k];
-            }
-        } catch (Exception e) {
-            int gg;
-            gg = 9;
-        }
-        return -1;
     }
 
     String getPhonicSplitParts(word w, String wholesound) {
@@ -3490,7 +2473,7 @@ public class MYSQLUpload {
             }
             if (s1 == null) {
                 System.out.println("**@@@@@@@****NOJSONSOUND*****************" + sounds[i]);
-                return null;
+                System.exit(0);
             }
             sounds[i] = s1;
         }
@@ -3502,12 +2485,12 @@ public class MYSQLUpload {
 
     public String[] getTopicSettings(topicTree topicTreeList, jnode jn, saveTree1 st, int topic_id) {
         return new String[]{
-            getTopicXML2(st, topic.types[topic.HOMOPHONES], true),
-            getTopicXML2(st, topic.types[topic.INORDER], true),
-            getTopicXML2(st, topic.types[topic.JUSTPHONICS], true),
-            getTopicXML2(st, topic.types[topic.NOTPHONICS], true),
-            getTopicXML2(st, topic.types[topic.STARTPHONICS], true),
-            getTopicXML2(st, topic.types[topic.NONSENSE], true)
+            getTopicDetail(st, topic.types[topic.HOMOPHONES], true),
+            getTopicDetail(st, topic.types[topic.INORDER], true),
+            getTopicDetail(st, topic.types[topic.JUSTPHONICS], true),
+            getTopicDetail(st, topic.types[topic.NOTPHONICS], true),
+            getTopicDetail(st, topic.types[topic.STARTPHONICS], true),
+            getTopicDetail(st, topic.types[topic.NONSENSE], true)
         };
     }
 
@@ -3517,597 +2500,6 @@ public class MYSQLUpload {
             n = Math.max(ww[i].v().length(), n);
         }
         return n;
-    }
-
-    public String getTopicXML(topicTree topicTreeList, jnode jn, saveTree1 st, int topic_id) {
-        wordsForSounds = null;
-        separateSounds = null;
-        String topicName = getTopicXML2(st, GTX_TOPICNAME, false);
-
-        if (topicName.indexOf("change y to i rule before adding suffix") >= 0) {
-            if (uploadStageUploadRest) {
-                int ff;
-                ff = 9;
-            }
-        }
-
-        t = topic.findtopic(topicName);
-        t.getWords(null, false);
-
-        if (t.picturePrefence != null) {
-            String ppss[] = u.splitString(t.picturePrefence, ",");
-            picPreKey = ppss[0].trim();
-            ppss[1] = ppss[1].trim();
-            picPreIsPhoto = false;
-            if (ppss[1].equalsIgnoreCase(PICPREF_VALWORDSHARKIM)) {
-                picPreIsPhoto = false;
-            } else if (ppss[1].equalsIgnoreCase(PICPREF_VALPHOTOIM)) {
-                picPreIsPhoto = true;
-            } else {
-                picPreKey = null;
-            }
-        }
-
-        t.mySQL_Topic_ID = topic_id;
-        tjn = jn;
-        topicTL = topicTreeList;
-        topicName = stripAts(topicName);
-        topicName = u.formatTextforUpload(topicName,CURRENT_MODE);
-
-        String teachingNote = getTopicXML2(st, GTX_TEACHINGNOTE, false);
-        teachingNote = u.formatTextforUpload(teachingNote,CURRENT_MODE);
-
-        String homophones = getTopicXML2(st, GTX_HOMOPHONES, true);
-
-        String apNotInTest = getTopicXML2(st, topic.types[topic.APNOTINTEST], true);
-        String apNotInUnitOrTest = getTopicXML2(st, topic.types[topic.APNOTINUNITORTEST], true);
-        String apPriority1 = getTopicXML2(st, topic.types[topic.APPRIORITY1], true);
-        String apPriority2 = getTopicXML2(st, topic.types[topic.APPRIORITY2], true);
-        String apPriority = "0";
-        if (apPriority1.equals("1")) {
-            apPriority = "1";
-        }
-        if (apPriority2.equals("1")) {
-            apPriority = "2";
-        }
-
-        String topicgamescats = null;
-
-        if (t.phrases) {
-            topicgamescats = gamesMainCategories[3];
-        } else if (t.phonics && !t.phonicsw) {
-            topicgamescats = gamesMainCategories[1];
-        } else if (t.phonicsw) {
-            topicgamescats = gamesMainCategories[0] + "|" + gamesMainCategories[2];
-        } else {
-            topicgamescats = gamesMainCategories[0];
-        }
-
-        String pairs = getTopicXML2(st, GTX_PAIRS, true);
-        String allornone = getTopicXML2(st, GTX_ALLORNONE, true);
-        String inorder = getTopicXML2(st, GTX_INORDER, true);
-        String fl = getTopicXML2(st, GTX_FL, true);
-        String revision = getTopicXML2(st, GTX_REVISION, true);
-        String isblended = t.blended ? "1" : "0";
-        String phonicSounds = (t.phonics && !t.phonicsw) ? "1" : "0";
-        String phonicWords = (t.phonicsw) ? "1" : "0";
-        
-        try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            Document doc = docBuilder.newDocument();
-            Element rootElement = doc.createElement(GTX_ROOT_XML);
-            doc.appendChild(rootElement);
-            // main topic element
-            Element mainTopicElement = doc.createElement(GTX_TOPICROOT_XML);
-            rootElement.appendChild(mainTopicElement);
-            Attr attr = doc.createAttribute(GTX_TOPICNAME_AT_XML);
-            attr.setValue(topicName);
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_APPRIORITY);
-            attr.setValue(apPriority);
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_APNOTINTEST);
-            attr.setValue(apNotInTest);
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_APNOTINUNITORTEST);
-            attr.setValue(apNotInUnitOrTest);
-            mainTopicElement.setAttributeNode(attr);
-           
-            attr = doc.createAttribute(GTX_RECOMMENDEDPHONICONGAMES);
-            attr.setValue("dummy_rpg_on");
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_RECOMMENDEDPHONICOFFGAMES);
-            attr.setValue("dummy_rpg_off");
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_PHONICONGAMES);
-            attr.setValue("dummy_pg_on");
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_PHONICOFFGAMES);
-            attr.setValue("dummy_pg_off");
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_SPLITONGAMES);
-            attr.setValue("dummy_sg_on");
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_SPLITOFFGAMES);
-            attr.setValue("dummy_sg_off");
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_TOPICGAMECATEGORYTYPE);
-            attr.setValue(topicgamescats);
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_ISREVISION_AT_XML);
-            attr.setValue(revision);
-            mainTopicElement.setAttributeNode(attr);
-
-            if (uploadStageUploadRest) {
-                attr = doc.createAttribute(GTX_TOPICUUID_AT_XML);
-                attr.setValue(String.valueOf(topic_id));
-                mainTopicElement.setAttributeNode(attr);
-            }
-            if (teachingNote != null) {
-                attr = doc.createAttribute(GTX_TEACHINGNOTE_AT_XML);
-                attr.setValue(teachingNote);
-                mainTopicElement.setAttributeNode(attr);
-            }
-            attr = doc.createAttribute(GTX_HOMOPHONES_AT_XML);
-            attr.setValue(homophones);
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_PAIRS_AT_XML);
-            attr.setValue(pairs);
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_ALLORNONE_AT_XML);
-            attr.setValue(allornone);
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_ISBLENDED_AT_XML);
-            attr.setValue(isblended);
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_INORDER_AT_XML);
-            attr.setValue(inorder);
-            mainTopicElement.setAttributeNode(attr);
-
-            attr = doc.createAttribute(GTX_PHONICS_SINGLE_AT_XML);
-            attr.setValue(phonicSounds);
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_PHONICS_WORDS_AT_XML);
-            attr.setValue(phonicWords);
-            mainTopicElement.setAttributeNode(attr);
-
-            mainTopicElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_FL_AT_XML);
-            attr.setValue(fl);
-            mainTopicElement.setAttributeNode(attr);
-
-            // THE TOPICBLOCKS            
-            Element topicBlocksElement = doc.createElement(GTX_TBS_XML);
-            rootElement.appendChild(topicBlocksElement);
-
-            word[] ww;
-            if (t.name.indexOf("months 7-12") >= 0) {
-                int gg;
-                gg = 8;
-            }
-            standardListAllOrNones = new ArrayList();
-            ww = getStandardWords(st);
-            currStandardWords = ww;
-            // do the STANDARD LIST
-            for (int i = 0; ww != null && i < ww.length; i++) {;
-                if (ww[i].value.startsWith(sentence.TEST_PREFIX)) {
-                    continue;  // the sentences for the Wordshark Test course
-                }
-                word specialSoundWord = null;
-                if (ww.length > i + 1 && ww[i + 1].value.startsWith(sentence.TEST_PREFIX)) {
-                    specialSoundWord = ww[i + 1];
-                }
-                Element topicBlockElement = doTopicBlock(doc, topicBlocksElement, TOPICBLOCKSTANDARD_TYPE);
-                Element refrencesElement = doc.createElement(GTX_REFERENCES_XML);
-                topicBlockElement.appendChild(refrencesElement);
-                Element refrenceElement = doc.createElement(GTX_REFERENCE_XML);
-                refrencesElement.appendChild(refrenceElement);
-                attributeCount = -1;
-                attributeIndexCount = -1;
-                for (int j = 0; j < standardListAllOrNones.size(); j++) {
-                    String sa[] = (String[]) standardListAllOrNones.get(j);
-                    int k = u.findString(sa, ww[i].value);
-                    if (k >= 0) {
-                        attributeCount = j;
-                        attributeIndexCount = k;
-                        break;
-                    }
-                }
-                if (attributeCount >= 0) {
-                    attr = doc.createAttribute(GTX_ALLORNONE_AT_XML);
-                    attr.setValue(String.valueOf(attributeCount));
-                    refrenceElement.setAttributeNode(attr);
-                    attr = doc.createAttribute(GTX_ALLORNONE_INDEX_AT_XML);
-                    attr.setValue(String.valueOf(attributeIndexCount));
-                    refrenceElement.setAttributeNode(attr);
-                }
-
-                if (ww[i].value.startsWith("(")) {
-                    continue;
-                }
-
-                if (uploadStageUploadWords && jn != null && topic_id >= 0) {
-                    doWordNew(ww[i], specialSoundWord, topic_id, null, new int[]{WORD_TYPE_STANDARD});
-                }
-            }
-            standardListAllOrNones = new ArrayList();
-            // do the extended
-            doExtended(topicTreeList, st, doc, topicBlocksElement);
-
-            if (t.phrases) {
-                Element tbEle = doGamesBlocks(st, doc, topicBlocksElement, GAME_SIMPLECROSSWORD, TOPICBLOCKGAME_TYPE, GAME_BLOCK_TYPE_SENTENCE);
-                doSentences(st, doc, topic_id, tbEle, 1, topicName, true, true);
-            }
-
-            // do the pairs
-            ww = getPairs(st);
-            if (ww != null) {
-                Element topicBlockElement = doTopicBlock(doc, topicBlocksElement, TOPICBLOCKPAIRS_TYPE);
-                Element pairsElement = doc.createElement(GTX_PAIRS_XML);
-                topicBlockElement.appendChild(pairsElement);
-                Element refrencesElement = null;
-
-                for (int i = 0; i < ww.length; i++) {
-                    boolean first = i % 2 == 0;
-                    if (first) {
-                        refrencesElement = doc.createElement(GTX_REFERENCES_XML);
-                        pairsElement.appendChild(refrencesElement);
-                        Element refrenceElement = doc.createElement(GTX_REFERENCE_XML);
-                        refrencesElement.appendChild(refrenceElement);
-                        int wordid = doWordNew(ww[i], topic_id, null, new int[]{WORD_TYPE_PAIRS});
-                        if (wordid < 0) {
-                            int g;
-                            g = 0;
-                            continue;
-                        }
-                        String wordids = String.valueOf(wordid) + ",";
-                        wordid = doWordNew(ww[i + 1], topic_id, null, new int[]{WORD_TYPE_PAIRS});
-                        if (wordid < 0) {
-                            int g;
-                            g = 0;
-                            continue;
-                        }
-                        wordids += wordid;
-                        attr = doc.createAttribute("WordID");
-                        attr.setValue(wordids);
-                        refrenceElement.setAttributeNode(attr);
-
-                    }
-                }
-            }
-            
-            // do games
-            doGames(topicTreeList, st, topic_id, doc, topicBlocksElement, TOPICBLOCKGAME_TYPE, topicName);
-            currgames = new String[]{};
-
-            if (topicName.indexOf("introduce a") >= 0) {
-                int ff;
-                ff = 9;
-            }
-
-            // get the nonsense rime distractors                    
-            String ss[] = getNonsenseRhymeDistractors(st);
-            Element topicBlockElement = null;
-            Element distractorsElement = null;
-            for (int i = 0; ss != null && i < ss.length; i++) {
-                if (topicBlockElement == null) {
-                    topicBlockElement = doTopicBlock(doc, topicBlocksElement, TOPICBLOCKDISTRACTORNONSENSERIME_TYPE);
-                    distractorsElement = doc.createElement(GTX_DISTRACTORS_XML);
-                    topicBlockElement.appendChild(distractorsElement);
-                }
-                Element distractorElement = doc.createElement(GTX_DISTRACTOR_XML);
-                distractorsElement.appendChild(distractorElement);
-                int b = doWord(new word(ss[i], "publictopics"), t, doc, distractorElement, true, topicName);
-                if (b < 0) {
-                    int gg;
-                    gg = 0;
-                }
-            }
-            ss = getPhonicDistractors(st);
-            topicBlockElement = null;
-            for (int i = 0; ss != null && i < ss.length; i++) {
-                if (topicBlockElement == null) {
-                    topicBlockElement = doTopicBlock(doc, topicBlocksElement, TOPICBLOCKDISTRACTORPHONICSOUNDS_TYPE);
-                }
-                
-                String sssounds[] = u.splitString(ss[i], ',');
-                if (sssounds != null) {
-                    Element soundGroupElement = doc.createElement(GTX_PHONIC_DISRACTORS_SOUNDGROUP);
-                    for (int j = 0; j < sssounds.length; j++) {
-                        Element soundElement = doc.createElement(GTX_PHONIC_DISRACTORS_SOUND);
-                        attr = doc.createAttribute(GTX_PHONIC_DISRACTORS_SOUNDNAME_AT_XML);
-                        soundElement.setAttributeNode(attr);
-                        String sound = sssounds[j] + "~";
-                        String s1 = tor.findJsonRecording(jsonRecResults, "publicsay1", sound);
-                        if (s1 == null) {
-                            s1 = tor.findJsonRecording(jsonRecResults, "publicsay1", sound.toLowerCase());
-                        }
-                        if (s1 == null) {
-                            u.okmess(shark.programName, s1 + "no sound");
-                        }
-                        attr.setValue(s1);
-                        if (separateSounds == null) {
-                            separateSounds = new String[]{sssounds[j]};
-                        } else {
-                            separateSounds = u.addString(separateSounds, sssounds[j]);
-                        }
-                        soundGroupElement.appendChild(soundElement);
-                    }
-                    topicBlockElement.appendChild(soundGroupElement);
-                }
-            }
-
-            // get the sounds from the list          
-            DOMSource domSource = new DOMSource(doc);
-            StringWriter writer = new StringWriter();
-            StreamResult result = new StreamResult(writer);
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer transformer = tf.newTransformer();
-            transformer.transform(domSource, result);
-            writer.flush();
-            return writer.toString();
-
-        } catch (TransformerException ex) {
-            int ff;
-            ff = 9;
-        } catch (javax.xml.parsers.ParserConfigurationException ex) {
-            int ff;
-            ff = 9;
-        }
-
-        return null;
-    }
-
-    int doWordNew(word w, int topic_id, String imageName, int word_type[]) {
-        return doWordNew(w, null, null, topic_id, imageName, word_type);
-    }
-
-    int doWordNew(word w, word specialSoundWord, int topic_id, String imageName, int word_type[]) {
-        return doWordNew(w, specialSoundWord, null, topic_id, imageName, word_type);
-    }
-
-    public int doWordNew(word w, word specialSoundWord, String patternText, int topic_id, String imageName, int word_type[]) {
-        boolean checkForExcluded = u.inlist(word_type, WORD_TYPE_STANDARD) || t.revision;
-        boolean wantPhonicSplits = u.inlist(word_type, WORD_TYPE_STANDARD) || u.inlist(word_type, WORD_TYPE_EXTENDED);
-        boolean wantSyllableSplits = u.inlist(word_type, WORD_TYPE_STANDARD) || u.inlist(word_type, WORD_TYPE_EXTENDED);
-        if (patternText != null) {
-            int h;
-            h = 0;
-        }
-        
-        boolean wordsharkImSimpleSentPref = PICPREF_KEYSIMPLESENT.equals(picPreKey) && u.inlist(word_type, WORD_TYPE_SENTENCE) && u.inlist(word_type, WORD_TYPE_SIMPLE);
-        boolean isSentFLTargetIm = imageName != null && u.inlist(word_type, WORD_TYPE_SENTENCE) && !u.inlist(word_type, WORD_TYPE_SIMPLE)
-                && u.inlist(word_type, WORD_TYPE_FL) && u.inlist(word_type, WORD_TYPE_TARGET);
-        boolean wordsharkImagePreference = isSentFLTargetIm || wordsharkImSimpleSentPref;   // preference for wordshark images for crossword1 FL
-        boolean photoImagePreference = MYSQLUpload.course.equalsIgnoreCase(WORDSHARKTESTCOURSE)
-                || (imageName != null && (u.inlist(word_type, WORD_TYPE_SENTENCE) && u.inlist(word_type, WORD_TYPE_TARGET) && !isSentFLTargetIm));
-        if (wordsharkImagePreference && photoImagePreference) {
-            u.okmess(shark.programName, "overlapping picture preference", sharkStartFrame.mainFrame);
-        }
-
-        boolean requireImage = u.inlist(word_type, WORD_TYPE_SIMPLE) && u.inlist(word_type, WORD_TYPE_SENTENCE) && u.inlist(word_type, WORD_TYPE_FL) && u.inlist(word_type, WORD_TYPE_TARGET);
-        boolean dontWantImage = (u.inlist(word_type, WORD_TYPE_SENTENCE)
-                && (imageName == null || !u.inlist(word_type, WORD_TYPE_TARGET)));
-        boolean isStandard = u.inlist(word_type, WORD_TYPE_STANDARD);
-        boolean isExcuded = false;
-        if (checkForExcluded) {
-            Object o[] = topic.getExcludedWord(u.absoluteToRelative(sharkStartFrame.publicTopicLib[0]),
-                    topicTL.getAncestors(tjn, u.absoluteToRelative(sharkStartFrame.publicTopicLib[0])),
-                    w.v());
-            isExcuded = (int) (o[0]) >= 0;
-        }
-        if (isExcuded && t.revision) {
-            return -1;
-        }
-        String ss[];
-        if (MYSQLUpload.course.equalsIgnoreCase(WORDSHARKTESTCOURSE)
-                && specialSoundWord != null
-                && specialSoundWord.value.startsWith(sentence.TEST_PREFIX)) {
-            ss = new String[]{specialSoundWord.value.substring(sentence.TEST_PREFIX.length()).toLowerCase(), "publicsent4"};
-        } else {
-            ss = getRecordingWordID2(w, t.fl);
-        }
-        String soundName = null;
-        String imageName_wordshark = null;
-        String imageName_photo = null;
-        String homophoneName = null;
-        String recdesktopname = null;
-        String recdbname = null;
-
-        if (ss != null) {
-            recdesktopname = ss[0];
-            recdbname = ss[1];
-            soundName = tor.findJsonRecording(jsonRecResults, recdbname, recdesktopname);
-            homophoneName = tor.findJsonRecording(jsonRecResults, recdbname, recdesktopname + "=");
-        }
-        if (soundName == null) {
-            if (u.findString(toBeRecordeds, w.value) < 0) {
-                if (w.value.indexOf("internet") >= 0) {
-                    int g;
-                    g = 0;
-                }
-                System.out.println("Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£Â£ NO SOUND   " + recdbname + "     " + recdesktopname + "     " + w.value);
-            }
-        }
-
-        currImageDb = null;
-        String im;
-        if (imageName == null) {
-            im = w.vpic();
-        } else {
-            im = imageName;
-        }
-        if (phonicshomo_on) {
-            String sh;
-            if ((sh = u.gettext("phonicshomos", w.v())) != null) {
-                im = sh;
-            }
-            soundName = getPhonicsHomoMainRec(w.vpic().replace("~", ""), soundName);
-            homophoneName = getPhonicsHomoHomoRec(w.vpic().replace("~", ""));
-        }
-        sharkImage si = null;
-        if (!dontWantImage && (!MYSQLUpload.course.equalsIgnoreCase(WORDSHARKTESTCOURSE) || !im.trim().endsWith("@@none"))) {
-            if (MYSQLUpload.course.equalsIgnoreCase(WORDSHARKTESTCOURSE)) {
-                im = u.getPhotoNameInWordsharkTestCourse(im);
-            }
-            if (si == null) {
-                si = sharkImage.find(im);
-            }
-            if (currImageDb != null) {
-                currImageDb = currImageDb.substring(currImageDb.lastIndexOf(shark.sep) + 1);
-            }
-            if (si != null) {
-                imageName_wordshark = tor.findJsonImage(jsonImageResults, currImageDb, im, true);
-            }
-            imageName_photo = tor.findJsonImage(jsonImageResults, currImageDb, im, false);
-            if (wordsharkImagePreference && imageName_wordshark != null) {
-                imageName_photo = imageName_wordshark;
-            } else if (photoImagePreference && imageName_photo != null) {
-                imageName_wordshark = imageName_photo;
-            } else {
-                //  so the user setting act more like a preference than a choice. if user has photo set, they may get wordshark image instead
-                if (imageName_photo == null && imageName_wordshark != null) {
-                    imageName_photo = imageName_wordshark;
-                } else if (imageName_wordshark == null && imageName_photo != null) {
-                    imageName_wordshark = imageName_photo;
-                }
-            }
-        }
-        /*
-        File ff[] = new File("C:\\xampp\\htdocs\\img\\publicimages\\new").listFiles();
-        for(int i = 0; i < ff.length; i++){ 
-            System.out.println(ff[i].getName() + "    " + ff[i].getName() + "      " + tor.getImageFileID(ff[i].getAbsolutePath()));
-        
-        }
-        */
-        
-        if (requireImage && (imageName_wordshark == null && imageName_photo == null)) {
-            System.out.println("^&^&^&^&^&^&^&^&^^&^^&^NO IMAGE      " + w.v() + "      " + im + Arrays.toString(word_type));
-        }
-
-        String adjustedValue = adjustedWordValue(w.value);
-        int wid = UploadWord2(String.valueOf(topic_id),
-                isStandard ? "1" : "0", isExcuded ? "1" : "0", w.v(), wantSyllableSplits ? addSyllableSplits(t.name, adjustedValue) : adjustedValue, patternText, null,
-                soundName, imageName_wordshark, imageName_photo, homophoneName, wantPhonicSplits ? getPhonicSplitParts(w, soundName) : null);
-        if (wid < 0) {
-            int g;
-            g = 0;
-        }
-        return wid;
-    }
-
-    int doWord(word w, topic t, Document doc, Element parentElement, String topicName) {
-        return doWord(w, t, doc, parentElement, false, false, null, null, null, topicName, null);
-    }
-
-    int doWord(word w, topic t, Document doc, Element parentElement, String topicName, int sentIm[]) {
-        return doWord(w, t, doc, parentElement, false, false, null, null, null, topicName, sentIm);
-    }
-
-    int doWord(word w, topic t, Document doc, Element parentElement, boolean isNonsense, String topicName) {
-        return doWord(w, t, doc, parentElement, isNonsense, false, null, null, null, topicName, null);
-    }
-
-    int doWord(word w, topic t, Document doc, Element parentElement, boolean isNonsense, boolean isRubbish, String bracketedWord, String root, String suffix) {
-        return doWord(w, t, doc, parentElement, isNonsense, isRubbish, bracketedWord, root, suffix, null, null);
-    }
-
-    int doWord(word w, topic t, Document doc, Element parentElement, boolean isNonsense, boolean isRubbish, String bracketedWord, String root, String suffix, String topicName, int sentIm[]) {
-        if (uploadStageUploadTopicToHeading) {
-            return 0;
-        }
-        if (topicName != null && topicName.equals("garbage")) {
-            isRubbish = true;
-        }
-        String xml2 = null;
-        try {
-            if (generateImageFiles) {
-                System.out.println(t.name + "   " + w.value);
-                UploadImage(w.vpic());
-            } else {
-                DocumentBuilderFactory docFactory2 = DocumentBuilderFactory.newInstance();
-                DocumentBuilder docBuilder2 = docFactory2.newDocumentBuilder();
-                Document doc2 = docBuilder2.newDocument();
-                Element rootElement2 = doc2.createElement(GTX_ROOT_XML);
-                doc2.appendChild(rootElement2);
-                doWord2(w, -1, -1, -1, -1, t, doc2, rootElement2, isNonsense, isRubbish, bracketedWord, root, suffix);
-                DOMSource domSource2 = new DOMSource(doc2);
-                StringWriter writer2 = new StringWriter();
-                StreamResult result2 = new StreamResult(writer2);
-                TransformerFactory tf2 = TransformerFactory.newInstance();
-                Transformer transformer = tf2.newTransformer();
-                transformer.transform(domSource2, result2);
-                writer2.flush();
-                xml2 = writer2.toString();
-                if (uploadStageUploadWords) {
-                    if (u.findString(uploadWordXml, xml2) < 0) {
-                        UploadWord(w, t, xml2, false);
-                    }
-                    UploadImage(w.vpic());
-                }
-            }
-        } catch (Exception ee) {
-            int g;
-            g = 8;
-        }
-        if (xml2 == null) {
-            int g;
-            g = 9;
-            return -1;
-        }
-        if (uploadStageUploadRest) {
-            int k = getWordID(xml2);
-            int kim = -1;
-            int kimbmp = -1;
-            int recid = -1;
-            if (k < 0) {
-                UploadWord(w, t, xml2, true);
-                k = getWordID(xml2);
-            }
-            if (k < 0) {
-                return -1;
-            } else {
-                recid = getRecordingWordID(w.vsay(), t.fl);
-                boolean issentencewithnoim = false;
-                if (sentIm != null) {
-                    for (int i = 0; i < sentIm.length; i++) {
-                        if (sentIm[i] < 0) {
-                            issentencewithnoim = true;
-                            break;
-                        }
-                    }
-                }
-                if (sentIm != null) {
-                    kim = sentIm[0];
-                    kimbmp = sentIm[1];
-                } else if (!issentencewithnoim) {
-                    kim = getImageID(w.vpic());
-                    kimbmp = getImageBMPID(getImageFileIdentifierForWord(w.vpic()));
-                }
-                if (kim >= 0) {
-                    Attr attr = doc.createAttribute(GTX_IMUUID_AT_XML);
-                    attr.setValue(String.valueOf(kim));
-                    parentElement.setAttributeNode(attr);
-                }
-                if (kimbmp >= 0) {
-                    Attr attr = doc.createAttribute(GTX_IMBMPUUID_AT_XML);
-                    attr.setValue(String.valueOf(kimbmp));
-                    parentElement.setAttributeNode(attr);
-                }
-                return doWord2(w, k, kim, kimbmp, recid, t, doc, parentElement, isNonsense, isRubbish, bracketedWord, root, suffix);
-            }
-        }
-
-        return 0;
-
     }
 
     static String getImageFileWebPathForWord(String s) {
@@ -4159,211 +2551,6 @@ public class MYSQLUpload {
             }
         }
         return false;
-    }
-
-    int doWord2(word w, int uuid, int imuuid, int imuuidbmp, int recordingid, topic t, Document doc, Element parentElement, boolean isNonsense, boolean isRubbish, String bracketedWord, String root, String suffix) {
-        if (true) {
-            return -1;
-        }
-
-        Element wordElement = doc.createElement(GTX_WORD_XML);
-        parentElement.appendChild(wordElement);
-        Attr attr = null;
-        if (w.v().indexOf("+") >= 0 && (uploadStageUploadWords || uploadStageUploadRest)) {
-            int gg;
-            gg = 9;
-        }
-        attr = doc.createAttribute(GTX_WORDNAME_AT_XML);
-        attr.setValue(u.formatTextforUpload(w.v(),CURRENT_MODE));
-        wordElement.setAttributeNode(attr);
-
-        if (bracketedWord != null) {
-            attr = doc.createAttribute(GTX_BRACKETED_WORD_AT_XML);
-            attr.setValue(u.formatTextforUpload(bracketedWord,CURRENT_MODE));
-            wordElement.setAttributeNode(attr);
-        }
-
-        boolean issound = w.phonics && !w.phonicsw;
-        boolean islettername = w.value.endsWith("!1");
-
-        attr = doc.createAttribute(GTX_ISSOUND_AT_XML);
-        attr.setValue(issound ? "1" : "0");
-        wordElement.setAttributeNode(attr);
-
-        attr = doc.createAttribute(GTX_ISLETTERNAME_AT_XML);
-        attr.setValue(islettername ? "1" : "0");
-        wordElement.setAttributeNode(attr);
-
-        attr = doc.createAttribute(GTX_ISHOMOPHONE_AT_XML);
-        attr.setValue(w.homophone ? "1" : "0");
-        wordElement.setAttributeNode(attr);
-        attr = doc.createAttribute(GTX_ISNONSENSE_AT_XML);
-        attr.setValue(isNonsense || t.nonsense ? "1" : "0");
-        wordElement.setAttributeNode(attr);
-        attr = doc.createAttribute(GTX_ISRUBBISH_AT_XML);
-        attr.setValue(isRubbish ? "1" : "0");
-        wordElement.setAttributeNode(attr);
-        if (root != null) {
-            attr = doc.createAttribute(GTX_WORD_ROOT_AT_XML);
-            attr.setValue(root);
-            wordElement.setAttributeNode(attr);
-        }
-        if (suffix != null) {
-            attr = doc.createAttribute(GTX_WORD_SUFFIX_AT_XML);
-            attr.setValue(suffix);
-            wordElement.setAttributeNode(attr);
-        }
-
-        if (uuid >= 0) {
-            attr = doc.createAttribute(GTX_WORDUUID_AT_XML);
-            attr.setValue(String.valueOf(uuid));
-            wordElement.setAttributeNode(attr);
-        }
-
-        if (recordingid >= 0) {
-            attr = doc.createAttribute(GTX_RECUUID_AT_XML);
-            attr.setValue(String.valueOf(recordingid));
-            wordElement.setAttributeNode(attr);
-        }
-        attr = doc.createAttribute(GTX_WORDITEMTYPE_AT_XML);
-        if (t.phrases) {
-            attr.setValue(WORDCAPTION_TYPE);
-        } else {
-            attr.setValue((w.phonics && !w.phonicsw) ? WORDSOUND_TYPE : WORDWORD_TYPE);
-        }
-        wordElement.setAttributeNode(attr);
-        int hr;
-        if ((hr = getRecordingWordID(w.v() + "=", false)) >= 0) {
-            attr = doc.createAttribute(GTX_HOMOPHONERECUUID_AT_XML);
-            attr.setValue(String.valueOf(hr));
-            wordElement.setAttributeNode(attr);
-        }
-        if (t.name.equals("longer words with wh  kn  wr  mb")) {
-            int gg;
-            gg = 9;
-        }
-
-        int n;
-        String phoniclysplit[] = null;
-        if ((n = w.value.indexOf("=")) > 0) {
-            String ps = w.value.substring(0, n);
-            phoniclysplit = u.splitString(ps, u.phonicsplits);
-        }
-        if (phoniclysplit != null) {
-            String segs[] = phoniclysplit;
-            int splitpos[] = new int[segs.length];
-            for (int i = 0; i < splitpos.length; i++) {
-                if (i == 0) {
-                    splitpos[0] = 0;
-                } else {
-                    splitpos[i] = splitpos[i - 1] + segs[i - 1].length();
-                }
-            }
-            for (int i = segs.length - 1; i >= 0; i--) {
-                if (segs[i].equals("\'")) {
-                    segs = u.removeString(segs, i);
-                    splitpos = u.removeint(splitpos, i);
-                }
-            }
-            String ps[] = w.phonics();
-            for (int i = ps.length - 1; i >= 0; i--) {
-                if (ps[i].equals("\'")) {
-                    ps = u.removeString(ps, i);
-                }
-            }
-            if (ps.length > 0) {
-                boolean found = false;
-                for (int p = 0; wordsForSounds != null && p < wordsForSounds.length; p++) {
-                    if (wordsForSounds[p].v().equals(w.v())) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    if (wordsForSounds == null) {
-                        wordsForSounds = new word[]{w};
-                    } else {
-                        wordsForSounds = u.addWords(wordsForSounds, w);
-                    }
-                }
-            }
-
-            int phonsylls[] = w.phsplitlist();
-            int nps[] = new int[]{};
-            if (phonsylls.length > 0) {
-                nps = u.addint(nps, 0);
-                for (int m = 0; m < phonsylls.length - 1; m++) {
-                    nps = u.addint(nps, phonsylls[m]);
-                }
-            }
-            phonsylls = nps;
-            int ti = 0;
-            for (int j = 0; segs.length > 1 && j < segs.length; j++) {
-                Element wordSplitElement = doc.createElement(GTX_WORDSPLIT_XML);
-                wordElement.appendChild(wordSplitElement);
-                attr = doc.createAttribute(GTX_WORDSPLITTYPE_AT_XML);
-                attr.setValue(WORDSPLITPHONIC_TYPE_VALUE);
-                wordSplitElement.setAttributeNode(attr);
-                attr = doc.createAttribute(GTX_WORDSPLITPOSITION_AT_XML);
-                attr.setValue(String.valueOf(splitpos[j]));
-                wordSplitElement.setAttributeNode(attr);
-                if (!w.isphonicsilent()[j]) {   // not in the case of magic e and so sound is missed off
-                    attr = doc.createAttribute(GTX_WORDSPLITSOUNDNAME_AT_XML);
-                    attr.setValue(ps[ti]);
-                    wordSplitElement.setAttributeNode(attr);
-                }
-                int pk;
-                if ((pk = u.inintlist(phonsylls, ti)) >= 0) {
-
-                    wordSplitElement = doc.createElement(GTX_WORDSPLIT_XML);
-                    wordElement.appendChild(wordSplitElement);
-                    attr = doc.createAttribute(GTX_WORDSPLITTYPE_AT_XML);
-                    attr.setValue(WORDSPLITPHONICSYLL_TYPE_VALUE);
-                    wordSplitElement.setAttributeNode(attr);
-                    attr = doc.createAttribute(GTX_WORDSPLITPOSITION_AT_XML);
-
-                    int posval = 0;
-
-                    for (int y = 0; pk > 0 && y < j; y++) {
-                        posval = posval + segs[y].length();
-                    }
-
-                    attr.setValue(String.valueOf(posval));
-                    wordSplitElement.setAttributeNode(attr);
-                    attr = doc.createAttribute(GTX_WORDSPLITSOUNDNAME_AT_XML);
-                    int end = 0;
-                    if (pk + 1 >= phonsylls.length) {
-                        end = ps.length;
-                    } else {
-                        end = phonsylls[pk + 1];
-                    }
-                    String val = "";
-                    for (int c = phonsylls[pk]; c < end; c++) {
-                        val += ps[c];
-                    }
-                    attr.setValue(val);
-                    wordSplitElement.setAttributeNode(attr);
-                }
-                if (!w.isphonicsilent()[j]) {
-                    ti++;
-                }
-            }
-        }
-        int ii[];
-        if ((ii = getTopicSplits(t.name, w.value)) != null) {
-            for (int k = 0; k < ii.length; k++) {
-                Element wordSplitElement = doc.createElement(GTX_WORDSPLIT_XML);
-                wordElement.appendChild(wordSplitElement);
-                attr = doc.createAttribute(GTX_WORDSPLITTYPE_AT_XML);
-                attr.setValue(WORDSPLITSYLL_TYPE_VALUE);
-                wordSplitElement.setAttributeNode(attr);
-                attr = doc.createAttribute(GTX_WORDSPLITPOSITION_AT_XML);
-                attr.setValue(String.valueOf(ii[k]));
-                wordSplitElement.setAttributeNode(attr);
-            }
-        }
-        //       }
-        return 1;
     }
 
     String adjustedWordValue(String s) {
@@ -4477,334 +2664,6 @@ public class MYSQLUpload {
         }
         return GTX_GAMES + u.combineString(ss, ",");
     }
-
-    void doGames(topicTree topicTreeList, saveTree1 st, int topic_id, Document doc, Element parentElement, String blockType, String topicName) {
-        mloop:
-        for (int j = 0; j < st.curr.names.length; ++j) {
-            if (st.curr.levels[j] != 1) {
-                continue mloop;
-            }
-
-            if (st.curr.names[j].startsWith(GTX_GAMES)) {
-                String oriNode = st.curr.names[j];
-                String adjustedGamesBlockTitle = adjustGamesBlockTitle(st.curr.names[j]);
-                if (adjustedGamesBlockTitle == null) {
-                    continue;
-                } else if (!st.curr.names[j].equals(adjustedGamesBlockTitle)) {
-                    st.curr.names[j] = adjustedGamesBlockTitle;
-                }
-                int extraGameType = -1;
-
-                // is this a game that deals with root + suffix words
-                for (int h = 0; h < GTX_PLUS_GAMES.length; h++) {
-                    if (st.curr.names[j].indexOf(GTX_PLUS_GAMES[h]) >= 0) {
-                        if (topicName.equals("ey as /ay/")) {
-                            int gg;
-                            gg = 9;
-                        }
-                        
-                        // are there any root + suffix words in there? - look ahead.
-                        int f = j;
-                        int flevel = st.curr.levels[f];
-                        int forilevel = st.curr.levels[f];
-                        boolean foundaplus = false;
-                        do {
-                            if (st.curr.names[f].indexOf("+") >= 0) {
-                                foundaplus = true;
-                                break;
-                            }
-                            f++;
-                            flevel = st.curr.levels[f];
-                        } while (flevel > forilevel);
-                        if (foundaplus) {
-                            extraGameType = GAME_BLOCK_TYPE_SUFFIX;
-                        }
-                        break;
-                    }
-                }
-                boolean isSentenceCrossword = GAME_SENTENCECROSSWORD.toLowerCase().equals(st.curr.names[j].substring(GTX_GAMES.length()).toLowerCase());
-                boolean isSimpleCrossword = GAME_SIMPLECROSSWORD.toLowerCase().equals(st.curr.names[j].substring(GTX_GAMES.length()).toLowerCase());
-                if (isSentenceCrossword || isSimpleCrossword) {
-                    String gamesstr = st.curr.names[j];
-                    String gamessetother = "";
-                    if (isSimpleCrossword) {
-                        // add the other games which have the needsentence3 flag
-                        gamessetother = GTX_GAMES;
-                        for (int i = 0; i < simpleSentence3Games.length; i++) {
-                            gamesstr += "," + simpleSentence3Games[i];
-                        }
-                    } else if (isSentenceCrossword) {
-                        // add the other games which have the needsentence1 flag (just save the sharks)
-                        for (int i = 0; i < simpleSentence1Games.length; i++) {
-                            gamesstr += ("," + simpleSentence1Games[i]);
-                        }
-                    }
-
-                    // if simple sentences, do twice for full sentence games and beep sentence game
-                    //               for(int n = 0; (gamessetother.length()>0||n==0) && n < 2; n++){
-                    //                  if(n==1)recDb = "publicsay3";// simple sentence full (no beep)
-                    Element tbEle = doGamesBlocks(st, doc, parentElement, gamesstr.substring(GTX_GAMES.length()), blockType, GAME_BLOCK_TYPE_SENTENCE);
-                    doSentences(st, doc, topic_id, tbEle, j, topicName, isSimpleCrossword, false);
-                    //              }      
-
-                } else {
-                    j = doGame2(topicTreeList, st, doc, parentElement, blockType, j, extraGameType, oriNode) - 1;
-                }
-                int f;
-                f = 0;
-            }
-        }
-    }
-
-    void doSentences(saveTree1 st, Document doc, int topic_id, Element parentElement, int j, String topicName, boolean isSimpleCrossword, boolean isCaptions) {
-        if (topicName.equals("-ar-")) {
-            int g;
-            g = 99;
-        }
-        if (MYSQLUpload.uploadStageUploadRest) {
-            int g;
-            g = 99;
-        }
-        if (topicName.equals("the family 1")) {
-            int f;
-            f = 9;
-        }
-
-        Element sentencesElement = doc.createElement(GTX_SENTENCES_XML);
-        parentElement.appendChild(sentencesElement);
-        if (!isCaptions) {
-            j++;
-        }
-        int baselev = st.curr.levels[j];
-        
-        String allSentenceTargetWords[] = getAllSentenceTargetWords(j, baselev, st, isCaptions);
-        int allTargetsIds[] = new int[]{};
-        int sentenceTargetType[] = new int[]{WORD_TYPE_SENTENCE};
-    
-        for(int index = 0; index < allSentenceTargetWords.length; index++){ 
-           int id = doWordNew(new word(allSentenceTargetWords[index], "publictopics"), topic_id, null, sentenceTargetType);
-           allTargetsIds = u.addint(allTargetsIds, id);   
-        }        
-        
-        while (j < st.curr.names.length && st.curr.levels[j] >= baselev && (!isCaptions || isCaption(st.curr.names[j]))) {
-            Attr attr = null;
-            if (st.curr.names[j].startsWith(topic.types[topic.SELECTDISTRACTORS])) {
-                // TODO not tested - add to xml
-                int sentenceDistractorNo = u.getint(st.curr.names[j].substring(topic.types[topic.SELECTDISTRACTORS].length()));
-                attr = doc.createAttribute("DistractorNo");
-                attr.setValue(String.valueOf(sentenceDistractorNo));
-                sentencesElement.setAttributeNode(attr);
-                j++;
-                continue;
-            }
-            Element sentenceElement = doc.createElement(GTX_SENTENCE_XML);
-            sentencesElement.appendChild(sentenceElement);
-            String senttype = getSentenceType(st.curr.names[j]);
-
-            String senttext = senttext = st.curr.names[j];
-            if (senttext.indexOf("i will wear a hat") >= 0) {
-                int g;
-                g = 0;
-            }
-            if (!isCaptions) {
-                attr = doc.createAttribute(GTX_SENTENCE_TEXT_AT_XML);
-                sentence sentpl = (new sentence(st.curr.names[j], null));
-                int p;
-                if ((p = senttext.indexOf('{')) >= 0) {
-                    senttext = senttext.substring(0, p);
-                }
-                attr.setValue(u.formatTextforUpload(sentpl.stripclozereplacewildcard(),CURRENT_MODE));
-                sentenceElement.setAttributeNode(attr);
-            }
-            if (isSimpleCrossword) {
-                attr = doc.createAttribute(GTX_SENTENCE_PLAIN_TEXT_AT_XML);
-                sentence sentpl = (new sentence(st.curr.names[j], null));
-                String splain = sentpl.stripcloze();
-                attr.setValue(u.formatTextforUpload(splain,CURRENT_MODE));
-                sentenceElement.setAttributeNode(attr);
-            }
-            String ssTargets[] = null;
-            String ss[];
-            Element mainE = null;
-            String sentenceDistractors[] = null;
-            if (!isCaptions) {
-                String targetImages[] = getSentenceTargetImages(st.curr.names[j]);
-                String temps[] = getSentenceTargetWords(st.curr.names[j], senttype, false);
-                String tempsWithAts[] = getSentenceTargetWords(st.curr.names[j], senttype, true);
-                ssTargets = ss = tempsWithAts;
-                int ii[] = new int[ss.length];
-
-                for (int i = 0; ss != null && i < ss.length; i++) {
-                    if (mainE == null) {
-                        mainE = doc.createElement(GTX_TARGETS_XML);
-                        sentenceElement.appendChild(mainE);
-                    }
-                    Element eleSub = doc.createElement(GTX_TARGET_XML);
-                    String imName = null;
-                    if (targetImages != null && targetImages.length == ss.length) {
-                        imName = targetImages[i];
-                    }
-
-                    int iiarr[] = new int[]{WORD_TYPE_TARGET, WORD_TYPE_SENTENCE};
-                    if (isSimpleCrossword) {
-                        iiarr = u.addint(iiarr, WORD_TYPE_SIMPLE);
-                    }
-                    if (t.fl) {
-                        iiarr = u.addint(iiarr, WORD_TYPE_FL);
-                    }
-
-                    String cword = ss[i];
-                    for (int p = 0; currStandardWords != null && p < currStandardWords.length; p++) {
-                        if (currStandardWords[p].v().toLowerCase().equals(cword.toLowerCase())) {
-                            cword = currStandardWords[p].v();
-                        }
-                    }
-                    sentenceDistractors = getSentenceDistractorWords(st.curr.names[j], senttype);
-                    
-                    if (sentenceDistractors != null) {
-                        // convert the explicit sentence distractors to the correct case based on the target word
-                        for (int p = 0; p < sentenceDistractors.length; p++) {
-                            boolean isTargetWordCapital = Character.isUpperCase(cword.charAt(0));
-                            boolean isDistractorCapital = Character.isUpperCase(sentenceDistractors[p].charAt(0));
-                            if (isTargetWordCapital != isDistractorCapital) {
-                                String d = sentenceDistractors[p];
-                                if (isTargetWordCapital) {
-                                    sentenceDistractors[p] = d.substring(0, 1).toUpperCase() + d.substring(1);
-                                } else {
-                                    sentenceDistractors[p] = d.substring(0, 1).toLowerCase() + d.substring(1);
-                                }
-                            }
-                        }
-                    }
-
-                    ii[i] = doWordNew(new word(cword, "publictopics"), topic_id, imName, iiarr);
-                    attr = doc.createAttribute("WordID");
-                    attr.setValue(String.valueOf(ii[i]));
-                    eleSub.setAttributeNode(attr);
-                    mainE.appendChild(eleSub);
-                }
-            } else {
-                // no photographs for captions
-                String im = findImageinStandardList(new word(st.curr.names[j], "publictopics"));
-                sharkImage si = sharkImage.find(im);
-                if (currImageDb != null) {
-                    currImageDb = currImageDb.substring(currImageDb.lastIndexOf(shark.sep) + 1);
-                }
-                String imageName = null;
-                if (si != null) {
-                    imageName = tor.findJsonImage(jsonImageResults, currImageDb, im, true);
-                    if (imageName == null) {
-                        u.okmess(shark.programName, "caption - no image");
-                    }
-                    attr = doc.createAttribute(GTX_SENTENCE_IMAGE_AT_XML);
-                    attr.setValue(u.formatTextforUpload(imageName,CURRENT_MODE));
-                    sentenceElement.setAttributeNode(attr);
-                }
-            }
-
-            String recDb;
-
-            if (t.fl) {
-                recDb = "publicsent3";
-            } else if (isCaptions) {
-                recDb = "publicsay1";
-            } else {
-                recDb = "publicsent2";
-            }
-
-            String searchSentText = senttext.toLowerCase();
-            searchSentText = searchSentText.replace("|", " ");
-            String s1r = tor.findJsonRecording(jsonRecResults, recDb, searchSentText);
-            if (s1r == null) {
-                if (u.findString(toBeRecordeds, searchSentText) < 0) {
-                    System.out.println("**@@@@@@@****NOJSONSENTENCESOUND*****************" + searchSentText);
-                }
-            } else {
-                attr = doc.createAttribute(isCaptions ? GTX_SENTENCE_RECNAMENOPEEP_AT_XML : GTX_SENTENCE_RECNAME_AT_XML);
-                attr.setValue(s1r);
-                sentenceElement.setAttributeNode(attr);
-            }
-            if (isSimpleCrossword && !isCaptions) {
-                recDb = "publicsay3";
-                sentence sent = new sentence(st.curr.names[j], recDb);
-                String ss3 = sent.stripcloze();
-
-                String searchSimpSentText = ss3.toLowerCase();
-                searchSimpSentText = searchSimpSentText.replace("|", " ");
-
-                s1r = tor.findJsonRecording(jsonRecResults, recDb, searchSimpSentText);
-                if (s1r == null) {
-                    System.out.println("**@@@@@@@****NOJSONSENTENCESOUND2222*****************" + ss3);
-                } else {
-                    attr = doc.createAttribute(GTX_SENTENCE_RECNAMENOPEEP_AT_XML);
-                    attr.setValue(s1r);
-                    sentenceElement.setAttributeNode(attr);
-                }
-            }
-
-            if (sentenceDistractors != null) {
-                // ssTargets
-                ss = sentenceDistractors;
-            } else {
-                ss = getSentenceDistractorWords(st.curr.names[j], senttype);
-            }
-            if(ss != null){
-                mainE = null;
-                for (int i = 0; ss != null && i < ss.length; i++) {
-                    if (mainE == null) {
-                        mainE = doc.createElement(GTX_DISTRACTORS_XML);
-                        sentenceElement.appendChild(mainE);
-                    }
-                    Element eleSub = doc.createElement(GTX_DISTRACTOR_XML);
-                    mainE.appendChild(eleSub);
-                    //              word w1 = new word(ss[i].toLowerCase(),"publictopics");
-                    String cword = ss[i];
-                    for (int p = 0; currStandardWords != null && p < currStandardWords.length; p++) {
-                        if (currStandardWords[p].v().toLowerCase().equals(cword.toLowerCase())) {
-                            cword = currStandardWords[p].v();
-                        }
-                    }
-                    word w1 = new word(cword, "publictopics");
-                    String im = findImageinStandardList(w1);
-                    int iiarr[] = new int[]{WORD_TYPE_SENTENCE};
-                    if (isSimpleCrossword) {
-                        iiarr = u.addint(iiarr, WORD_TYPE_SIMPLE);
-                    }
-                    if (t.fl) {
-                        iiarr = u.addint(iiarr, WORD_TYPE_FL);
-                    }
-
-                    int b = doWordNew(w1, topic_id, im, iiarr);
-                    attr = doc.createAttribute("WordID");
-                    attr.setValue(String.valueOf(b));
-                    eleSub.setAttributeNode(attr);
-                    if (b < 0) {
-                        int gg;
-                        gg = 9;
-                    }
-                }
-            }
-            // use the other targets as specified defaults
-            else if(ssTargets != null){
-                mainE = doc.createElement(GTX_DISTRACTORS_XML);
-                sentenceElement.appendChild(mainE);
-
-                loopTargets:for(int index = 0; index < allSentenceTargetWords.length; index++){ 
-                    for(int index2 = 0; index2 < ssTargets.length; index2++){
-                        if(allSentenceTargetWords[index].equalsIgnoreCase(ssTargets[index2])){
-                            continue loopTargets;
-                        }
-                    }
-                    Element eleSub = doc.createElement(GTX_DISTRACTOR_XML);
-                    mainE.appendChild(eleSub);
-                    attr = doc.createAttribute("WordID");
-                    attr.setValue(String.valueOf(allTargetsIds[index]));
-                    eleSub.setAttributeNode(attr); 
-                }
-            }
-            j++;
-        }
-    }
     
     String[] getAllSentenceTargetWords(int j, int baselev, saveTree1 st, boolean isCaptions){
         String allTargets[] = new String[]{};
@@ -4868,7 +2727,7 @@ public class MYSQLUpload {
         } else {
             ret = sent.stripcloze();
         }
-        ret = u.formatTextforUpload(ret,CURRENT_MODE);
+        ret = u.formatTextforUpload(ret);
         return ret;
     }
 
@@ -4946,131 +2805,6 @@ public class MYSQLUpload {
         return ret;
     }
 
-    int doGame2(topicTree topicTreeList, saveTree1 st, Document doc, Element parentElement, String blockType, int j, int extraGameBlockType, String oriNodeName) {
-        Element tbEle = null;
-        int oriLev = st.curr.levels[j];
-        String games = st.curr.names[j].substring(GTX_GAMES.length());
-        String ngs[] = null;
-        int count = 1;
-        boolean snakesFound = false;
-        boolean patternFound = false;
-        if (games != null && !games.trim().equals("") && (ngs = u.splitString(games, ",")).length > 0) {
-            for (int i = 0; i < ngs.length; i++) {
-                if (ngs[i].toLowerCase().equals(GAME_PATTERN.toLowerCase()) || ngs[i].toLowerCase().equals(GAME_TRACKING.toLowerCase())) {
-                    patternFound = true;
-                } else if (ngs[i].toLowerCase().equals(GAME_SNAKESANDLADDERS.toLowerCase())) {
-                    snakesFound = true;
-                }
-            }
-            // need to double up on these due to the different select_count numbers
-            if (snakesFound && patternFound) {
-                count = 2;
-            }
-        }
-        String gameStr = st.curr.names[j];
-
-        int orij = j;
-        for (int n = 0; ngs != null && n < count; n++) {
-            if (snakesFound && patternFound) {
-                if (n == 1) {
-                    j = orij;
-                    String newgs[] = u.removeString2(ngs, GAME_PATTERN.toLowerCase());
-                    newgs = u.removeString2(ngs, GAME_PATTERN);
-                    gameStr = GTX_GAMES + u.combineString(newgs, ",");
-                } else {
-                    String newgs[] = u.removeString2(ngs, GAME_SNAKESANDLADDERS.toLowerCase());
-                    newgs = u.removeString2(ngs, GAME_SNAKESANDLADDERS);
-                    gameStr = GTX_GAMES + u.combineString(newgs, ",");
-                }
-            }
-
-            tbEle = doGamesBlocks(st, doc, parentElement, gameStr.substring(GTX_GAMES.length()), blockType, extraGameBlockType);
-            if (tbEle == null) {
-                return j;
-            }
-
-            String gType = tbEle.getAttribute(GTX_TB_NUM_AT_GAMEBLOCKTYPE);
-
-            if (gType.equals(TOPICBLOCKGAMETYPE_HELICOPTERLISTEN)
-                    || gType.equals(TOPICBLOCKGAMETYPE_HELICOPTERSPELL)
-                    || gType.equals(TOPICBLOCKGAMETYPE_PATTERN)
-                    || gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES)) {
-
-                int selectNoTarget = -1;
-                int selectNoDistractor = -1;
-                int allocNoGood = -1;
-                int allocNoBad = -1;
-                if (gType.equals(TOPICBLOCKGAMETYPE_PATTERN)) {
-                    selectNoTarget = selectCountTargetNoPattern;
-                    selectNoDistractor = selectCountDistractorNoPattern;
-                    allocNoGood = pattern.ALLOCGOOD;
-                    allocNoBad = pattern.ALLOCBAD;
-                } else if (gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES)) {
-                    selectNoTarget = selectCountTargetNoSnakesAndLadders;
-                    selectNoDistractor = selectCountDistractorNoSnakesAndLadders;
-                    allocNoGood = snakesandladders.ALLOCGOOD;
-                    allocNoBad = snakesandladders.ALLOCBAD;
-                }
-                t.clearHeadingLists();
-                selectGameDetails gs[] = t.getSelectGameBuckets(ngs,
-                        gType.equals(TOPICBLOCKGAMETYPE_HELICOPTERLISTEN) || gType.equals(TOPICBLOCKGAMETYPE_HELICOPTERSPELL),
-                        selectNoTarget,
-                        selectNoDistractor,
-                        allocNoGood,
-                        allocNoBad,
-                        this
-                );
-                int selectNo = 0;
-                Element lastEle = tbEle;
-                if (gs.length > 1) {
-                    Element selectsElement = doc.createElement(GTX_SELECT_XML + String.valueOf(selectNo++));
-                    tbEle.appendChild(selectsElement);
-                    lastEle = selectsElement;
-                    Attr attr = doc.createAttribute(GTX_SELECTGROUPNO_AT_XML);
-                    attr.setValue("1");
-                    lastEle.setAttributeNode(attr);
-                }
-                int startSelNo = selectNo;
-                for (int h = 0; h < gs.length; h++) {
-                    selectNo = startSelNo;
-                    Element selectsElement2 = doc.createElement(GTX_SELECT_XML + String.valueOf(selectNo++));
-                    lastEle.appendChild(selectsElement2);
-                    for (int i = 0; i < gs[h].groups.length; i++) {
-                        Element selectsElement3 = doc.createElement(GTX_SELECT_XML + String.valueOf(selectNo));
-                        selectsElement2.appendChild(selectsElement3);
-                        Attr attrh = doc.createAttribute(GTX_HEADING_AT_XML);
-                        attrh.setValue(u.formatTextforUpload(gs[h].groups[i].heading,CURRENT_MODE));
-                        selectsElement3.setAttributeNode(attrh);
-                        if (gs[h].groups[i].headingSoundFile != null) {
-                            Attr attrhs = doc.createAttribute(GTX_HEADING_AT_SOUND_UUID);
-                            attrhs.setValue(gs[h].groups[i].headingSoundFile);
-                            selectsElement3.setAttributeNode(attrhs);
-                        }
-                        if (gs[h].groups[i].words.length >= 0) {
-                            Element referenceElement = doc.createElement(GTX_REFERENCES_XML + String.valueOf(selectNo));
-                            selectsElement3.appendChild(referenceElement);
-                            String refs = u.combineString(gs[h].groups[i].words, ",");
-                            Attr attrrefs = doc.createAttribute("WordIDs");
-                            attrrefs.setValue(refs);
-                            referenceElement.setAttributeNode(attrrefs);
-                            if (gs[h].groups[i].selectNo >= 0) {
-                                Attr attrsel = doc.createAttribute(GTX_SELECTNO_AT_XML);
-                                attrsel.setValue(String.valueOf(gs[h].groups[i].selectNo));
-                                referenceElement.setAttributeNode(attrsel);
-                            }
-                        }
-                    }
-                }
-                j++;
-                while (j < st.curr.levels.length && st.curr.levels[j] > oriLev) {
-                    j++;
-                }
-            }
-        }
-
-        return j;
-    }
-
     static boolean isAmongstSiblings(saveTree1 st, int j) {
         int orilev = st.curr.levels[j];
         int count = 0;
@@ -5083,130 +2817,6 @@ public class MYSQLUpload {
             j++;
         }
         return count > 1;
-    }
-
-    static Element doGamesBlocks(saveTree1 st, Document doc, Element parentElement, String names, String blockType) {
-        return doGamesBlocks(st, doc, parentElement, names, blockType, -1);
-    }
-
-    static Element doGamesBlocks(saveTree1 st, Document doc, Element parentElement, String names, String blockType, int gameBlockType) {
-        currgames = new String[]{};
-        if (names == null) {
-            return null;
-        }
-        String ngs[];
-        Element tbElement = null;
-        if (names != null && !names.trim().equals("") && (ngs = u.splitString(names, ",")).length > 0) {
-            String gameType = null;
-            for (int k = 0; gameType == null && k < ngs.length; k++) {
-                if (ngs[k].toLowerCase().equals(GAME_HELICOPTERLISTEN.toLowerCase())) {
-                    gameType = TOPICBLOCKGAMETYPE_HELICOPTERLISTEN;
-                } else if (ngs[k].toLowerCase().equals(GAME_HELICOPTERSPELL.toLowerCase())) {
-                    gameType = TOPICBLOCKGAMETYPE_HELICOPTERSPELL;
-                } else if (ngs[k].toLowerCase().equals(GAME_PATTERN.toLowerCase()) || ngs[k].toLowerCase().equals(GAME_TRACKING.toLowerCase())) {
-                    gameType = TOPICBLOCKGAMETYPE_PATTERN;
-                } else if (ngs[k].toLowerCase().equals(GAME_SNAKESANDLADDERS.toLowerCase())) {
-                    gameType = TOPICBLOCKGAMETYPE_PATTERNSNAKES;
-                }
-            }
-            tbElement = doTopicBlock(doc, parentElement, blockType, gameType);
-            if (gameBlockType == GAME_BLOCK_TYPE_SENTENCE) {
-                String lowercasengs[] = new String[ngs.length];
-                for (int m = 0; m < ngs.length; m++) {
-                    lowercasengs[m] = ngs[m].toLowerCase();
-                }
-
-                Attr attr = doc.createAttribute(GTX_GAMEBLOCKTYPE_AT_XML);
-                String game = null;
-                if (u.findString(lowercasengs, GAME_SENTENCECROSSWORD.toLowerCase()) >= 0) {
-                    game = TOPICBLOCKGAMETYPE_CROSSWORD;
-                }
-                if (u.findString(lowercasengs, GAME_SIMPLECROSSWORD.toLowerCase()) >= 0) {
-                    game = TOPICBLOCKGAMETYPE_SIMPLECROSSWORD;
-                }
-                if (game == null) {
-                    u.okmess(shark.programName, "problem with sentences");
-                }
-                attr.setValue(game);
-                tbElement.setAttributeNode(attr);
-            }
-            if (gameBlockType == GAME_BLOCK_TYPE_SUFFIX) {
-                Attr attr = doc.createAttribute(GTX_GAMEBLOCKTYPE_AT_XML);
-                attr.setValue(TOPICBLOCKGAMESUFFIX_TYPE);
-                tbElement.setAttributeNode(attr);
-            }
-            //remove duplicates and empties
-            String notgamess[] = new String[]{};
-            for (int j = 0; j < ngs.length; j++) {
-                if (u.findString(notgamess, ngs[j]) < 0 && !ngs[j].trim().equals("")) {
-                    notgamess = u.addString(notgamess, ngs[j]);
-                }
-            }
-
-            for (int j = 0; j < notgamess.length; j++) {
-                String ng = notgamess[j].trim();
-                char c = ng.charAt(0);
-                if (Character.isLowerCase(c)) {
-                    ng = String.valueOf(c).toUpperCase() + ng.substring(1);
-                }
-                if (u.findString(gameNames, ng) < 0) {
-                    continue;
-                }
-                int i;
-                String spgc = null;
-                if (ng.endsWith("^") && (i = ng.substring(0, ng.length() - 2).indexOf("^")) > 0) {
-                    spgc = ng.substring(i + 1, ng.length() - 1);
-                    ng = ng.substring(0, i);
-                }
-
-                if (blockType.equals(TOPICBLOCKRECOMMENDED2GAMES_TYPE) || blockType.equals(TOPICBLOCKRECOMMENDEDGAMES_TYPE)) {
-
-                } else {
-                    jnode isncs[] = sharkStartFrame.mainFrame.publicGameTree.find2(ng);
-                    String preng = ng;
-                    ng = u.formatTextforUpload(ng,CURRENT_MODE);
-                    tbElement.appendChild(doGamesBlocks2(st, doc, ng, spgc, isncs[0]));
-                    if (u.findString(currgames, preng) < 0) {
-                        currgames = u.addString(currgames, preng);
-                    }               
-                }
-            }
-        }
-        return tbElement;
-    }
-
-    static Element doGamesBlocks2(saveTree1 st, Document doc, String ng, String spgc, jnode jn) {
-        Element ngElement = doc.createElement(GTX_GAME_XML);
-        Attr attr = doc.createAttribute(GTX_GAMENAME_AT_XML);
-        attr.setValue(ng);
-        ngElement.setAttributeNode(attr);
-        attr = doc.createAttribute(GTX_GAMEISHEADING_AT_XML);
-        if (jn == null) {
-            int ff;
-            ff = 8;
-        }
-        attr.setValue((jn == null || jn.isLeaf()) ? "0" : "1");
-        ngElement.setAttributeNode(attr);
-        String gc;
-        if (spgc != null) {
-            int t = -1;
-            try {
-                t = Integer.parseInt(spgc);
-            } catch (Exception e) {
-                int gg;
-                gg = 9;
-            }
-            if (t >= 0) {
-                attr = doc.createAttribute(GTX_GAMECATEGORY_AT_XML);
-                attr.setValue(String.valueOf(t));
-                ngElement.setAttributeNode(attr);
-            }
-        } else if ((gc = getGamesCategory(jn)) != null) {
-            attr = doc.createAttribute(GTX_GAMECATEGORY_AT_XML);
-            attr.setValue(gc);
-            ngElement.setAttributeNode(attr);
-        }
-        return ngElement;
     }
 
     static String getRootSuffix(String s, String val, String suff) {
@@ -5446,78 +3056,11 @@ public class MYSQLUpload {
 
     }
 
-    void doExtended(topicTree topicTreeList, saveTree1 st, Document doc, Element parentElement) {
-        lastMainGameSelects = null;
-        mloop:
-        for (int j = 0; j < st.curr.names.length; ++j) {
-            if (st.curr.levels[j] != 1) {
-                continue mloop;
-            }
-            if (!isSelect(st.curr.names[j])) {
-                continue mloop;
-            }
-            
-            Element topicBlockElement = doTopicBlock(doc, parentElement, TOPICBLOCKEXTENDED_TYPE);
-            // add selects
-            htext = null;
-            initSelectLevelAdjuster(st.curr.levels[j], 0);
-            doSelects(topicTreeList, st, doc, topicBlockElement, null, st.curr, j, j, 0);
-        }
-    }
-    
-    JSONObject doExtendedJson(topicTree topicTreeList, saveTree1 st) {
-        
-        JSONObject extendedBlock = new JSONObject();
-        JSONArray extendedArray = new JSONArray();
-        
-        lastMainGameSelects = null;
-        mloop:
-        for (int j = 0; j < st.curr.names.length; ++j) {
-            if (st.curr.levels[j] != 1) {
-                continue mloop;
-            }
-            if (!isSelect(st.curr.names[j])) {
-                continue mloop;
-            }
-            
-            
-            JSONObject extended = doTopicBlockJson(TOPICBLOCKEXTENDED_TYPE);
-            
-            // add selects
-            htext = null;
-            initSelectLevelAdjuster(st.curr.levels[j], 0);
-            doSelectsJson(topicTreeList, st, extended, null, st.curr, j, j, 0);
-            
-            
-            extendedArray.add(extended);
-            
-        }
-        extendedBlock.put("extended", extendedArray);
-       
-        return extendedBlock;
-    }
 
-    static Element doTopicBlock(Document doc, Element parentElement, String topicBlockType) {
-        return doTopicBlock(doc, parentElement, topicBlockType, null);
-    }
-    
     static JSONObject doTopicBlockJson(String topicBlockType) {
         return doTopicBlockJson(topicBlockType, null);
     }
 
-    static Element doTopicBlock(Document doc, Element parentElement, String topicBlockType, String gameType) {
-        Element topicBlockElement = doc.createElement(GTX_TB_XML);
-        parentElement.appendChild(topicBlockElement);
-        Attr attr = doc.createAttribute(GTX_TB_TYPE_AT_XML);
-        attr.setValue(topicBlockType);
-        topicBlockElement.setAttributeNode(attr);
-        if (gameType != null) {
-            attr = doc.createAttribute(GTX_TB_NUM_AT_GAMEBLOCKTYPE);
-            attr.setValue(gameType);
-            topicBlockElement.setAttributeNode(attr);
-        }
-        return topicBlockElement;
-    }
     
     static JSONObject doTopicBlockJson(String topicBlockType, String gameType) {
         JSONObject topicBlock = new JSONObject();
@@ -5550,862 +3093,6 @@ public class MYSQLUpload {
         currentselectLevelAdjuster = 0;
     }
 
-    int doSelects(topicTree topicTreeList, saveTree1 st, Document doc, Element parentElement, String headingText, saveTree1.saveTree2 st2, int j, int selectsj, int type) {
-        return doSelects(topicTreeList, st, doc, parentElement, headingText, st2, j, selectsj, type, null);
-    }
-    
-    int doSelectsJson(topicTree topicTreeList, saveTree1 st, JSONObject doc, String headingText, saveTree1.saveTree2 st2, int j, int selectsj, int type) {
-        return doSelectsJson(topicTreeList, st, doc, headingText, st2, j, selectsj, type, null);
-    }
-
-    int doSelects(topicTree topicTreeList, saveTree1 st, Document doc, Element parentElement, String headingText, saveTree1.saveTree2 st2, int j, int selectsj, int extraGameBlockType, String games[]) {
-        int newbase = st.curr.levels[j];
-        int headingtextbase = -1;
-        String selno = (st.curr.names[j].substring(st.curr.names[j].indexOf(":") + 1));
-        try {
-            Integer.parseInt(selno);
-        } catch (Exception e) {
-            if (st.curr.names[j].startsWith(topic.types[topic.SELGROUPS]) || st.curr.names[j].startsWith(topic.types[topic.SELITEMS])) {
-                selno = null;
-            }
-        }
-        int ti = doSelectLevelAdjuster(st.curr.levels[j] - selectLevelAdjuster);
-        Element selectsElement = doc.createElement(GTX_SELECT_XML + String.valueOf(ti));
-        lastActualSelectLevel = ti;
-
-        parentElement.appendChild(selectsElement);
-        Attr attr;
-        if (selno != null && !selno.trim().equals("")) {
-            String gatt = getSelectAtt(st.curr.names[j]);
-            attr = doc.createAttribute(gatt + String.valueOf(ti));
-            attr.setValue(selno);
-            selectsElement.setAttributeNode(attr);
-        }
-        if (headingText != null) {
-            int in;
-            if (headingText.startsWith("=") && (in = headingText.indexOf(',')) >= 0) {
-                String soundid = headingText.substring(1, in);
-                int in2 = getRecordingSoundID(soundid + "~");
-                if (in2 >= 0) {
-                    attr = doc.createAttribute(GTX_HEADING_AT_SOUND_UUID + String.valueOf(ti));
-                    attr.setValue(String.valueOf(in2));
-                    selectsElement.setAttributeNode(attr);
-                } else {
-                    int gg;
-                    gg = 9;
-                }
-                headingText = headingText.substring(in + 1);
-            }
-            attr = doc.createAttribute(GTX_HEADING_AT_XML);
-            attr.setValue(u.formatTextforUpload(headingText,CURRENT_MODE));
-
-            selectsElement.setAttributeNode(attr);
-        }
-        if (isSelect(st.curr.names[j])) {
-            j++;
-        }
-        selloop:
-        do {
-            if (st.curr.names[j].trim().equals("")) {
-                j++;
-                continue;
-            }
-            if (st.curr.levels[j] <= headingtextbase) {
-                htext = null;
-            }
-            if (isSelect(st.curr.names[j])) {
-                if (!(st.curr.levels.length > j + 1 && st.curr.levels[j] >= st.curr.levels[j + 1])) {
-                    j = doSelects(topicTreeList, st, doc, selectsElement, htext, st2, j, selectsj, extraGameBlockType, games);
-                }
-            } else if (st.curr.names[j].startsWith(GTX_HEADING)) {
-                htext = u.formatTextforUpload(st.curr.names[j].substring(GTX_HEADING.length()),CURRENT_MODE);
-                if (st.curr.names.length > j + 1 && isSelect(st.curr.names[j + 1])) {
-                    headingtextbase = st.curr.levels[j];
-                } else {
-                    j = doSelects(topicTreeList, st, doc, selectsElement, htext, st2, j + 1, selectsj, extraGameBlockType, games);
-                }
-            } else {
-                htext = null;
-                j = doReferences(topicTreeList, st, doc, selectsElement, st2, j, extraGameBlockType, String.valueOf(ti), games);
-                if (j < st.curr.levels.length) {
-                    if (isSelect(st.curr.names[j])) {
-                        if (st.curr.levels[j] > st.curr.levels[selectsj]) {
-                            return j - 1;
-                        } else {
-                            return j - 1;
-                        }
-                    } else if (st.curr.levels[j] <= st.curr.levels[selectsj]) {
-                        return j - 1;
-                    } else if (st.curr.names[j].startsWith(GTX_HEADING)) {
-                        return j - 1;
-                    }
-                }
-            }
-            j++;
-        } while (j < st.curr.levels.length && st.curr.levels[j] > newbase);
-        return j - 1;
-    }
-    
-    
-    int doSelectsJson(topicTree topicTreeList, saveTree1 st, JSONObject doc, String headingText, saveTree1.saveTree2 st2, int j, int selectsj, int extraGameBlockType, String games[]) {
-        int newbase = st.curr.levels[j];
-        int headingtextbase = -1;
-        String selno = (st.curr.names[j].substring(st.curr.names[j].indexOf(":") + 1));
-        try {
-            Integer.parseInt(selno);
-        } catch (Exception e) {
-            if (st.curr.names[j].startsWith(topic.types[topic.SELGROUPS]) || st.curr.names[j].startsWith(topic.types[topic.SELITEMS])) {
-                selno = null;
-            }
-        }
-        int ti = doSelectLevelAdjuster(st.curr.levels[j] - selectLevelAdjuster);
-        
-        JSONObject select = new JSONObject();
-        
-        if (selno != null && !selno.trim().equals("")) {
-            select.put(getSelectAtt(st.curr.names[j]), selno);
-        }
-
-        lastActualSelectLevel = ti;
-        
-        if (headingText != null) {
-            int in;
-            if (headingText.startsWith("=") && (in = headingText.indexOf(',')) >= 0) {
-                String soundid = headingText.substring(1, in);
-                int in2 = getRecordingSoundID(soundid + "~");
-                if (in2 >= 0) {
-                    select.put(GTX_HEADING_AT_SOUND_UUID, String.valueOf(in2));
-                }
-                headingText = headingText.substring(in + 1);
-            }
-            select.put(GTX_HEADING_AT_XML, u.formatTextforUpload(headingText,CURRENT_MODE));
-        }
-
-        if (isSelect(st.curr.names[j])) {
-            j++;
-        }
-        selloop:
-        do {
-            if (st.curr.names[j].trim().equals("")) {
-                j++;
-                continue;
-            }
-            if (st.curr.levels[j] <= headingtextbase) {
-                htext = null;
-            }
-            if (isSelect(st.curr.names[j])) {
-                if (!(st.curr.levels.length > j + 1 && st.curr.levels[j] >= st.curr.levels[j + 1])) {
-                    j = doSelectsJson(topicTreeList, st, select, htext, st2, j, selectsj, extraGameBlockType, games);
-                }
-            } else if (st.curr.names[j].startsWith(GTX_HEADING)) {
-                htext = u.formatTextforUpload(st.curr.names[j].substring(GTX_HEADING.length()),CURRENT_MODE);
-                if (st.curr.names.length > j + 1 && isSelect(st.curr.names[j + 1])) {
-                    headingtextbase = st.curr.levels[j];
-                } else {
-                    j = doSelectsJson(topicTreeList, st, select, htext, st2, j + 1, selectsj, extraGameBlockType, games);
-                }
-            } else {
-                htext = null;
-                j = doReferencesJson(topicTreeList, st, select, st2, j, extraGameBlockType, String.valueOf(ti), games);
-                if (j < st.curr.levels.length) {
-                    if (isSelect(st.curr.names[j])) {
-                        if (st.curr.levels[j] > st.curr.levels[selectsj]) {
-                            return j - 1;
-                        } else {
-                            return j - 1;
-                        }
-                    } else if (st.curr.levels[j] <= st.curr.levels[selectsj]) {
-                        return j - 1;
-                    } else if (st.curr.names[j].startsWith(GTX_HEADING)) {
-                        return j - 1;
-                    }
-                }
-            }
-            j++;
-        } while (j < st.curr.levels.length && st.curr.levels[j] > newbase);
-
-        return j - 1;
-
-    }
-
-    int doSelectsGame(topicTree topicTreeList, saveTree1 st, Document doc, Element gameElement, Element parentElement, String headingText, saveTree1.saveTree2 st2, int j, int selectsj, int extraGameBlockType, String games[]) {
-        int newbase = st.curr.levels[j];
-        int headingtextbase = -1;
-
-        String selno = (st.curr.names[j].substring(st.curr.names[j].indexOf(":") + 1));
-        try {
-            Integer.parseInt(selno);
-        } catch (Exception e) {
-            if (!(st.curr.names[j].startsWith(topic.types[topic.SELGROUPS]) || st.curr.names[j].startsWith(topic.types[topic.SELITEMS]))) {
-                selno = null;
-            }
-        }
-        int ti = doSelectLevelAdjuster(st.curr.levels[j] - selectLevelAdjuster);
-        Element selectsElement = doc.createElement(GTX_SELECT_XML + String.valueOf(ti));
-        lastActualSelectLevel = ti;
-
-        parentElement.appendChild(selectsElement);
-        Attr attr;
-        boolean isGroupSelect = false;
-        if (selno != null && !selno.trim().equals("")) {
-            String gatt = getSelectAtt(st.curr.names[j]);
-            isGroupSelect = GTX_SELECTGROUPNO_AT_XML.equals(gatt);
-            if (isGroupSelect) {
-                int g;
-                g = 0;
-            }
-            attr = doc.createAttribute(gatt);
-            attr.setValue(selno);
-            selectsElement.setAttributeNode(attr);
-        }
-        if (headingText != null) {
-            String s1 = tor.findJsonRecording(jsonRecResults, "publicsent1", headingText);
-            if (s1 == null) {
-                s1 = tor.findJsonRecording(jsonRecResults, "publicsent1", headingText.toLowerCase());
-            }
-            attr = doc.createAttribute(GTX_HEADING_AT_XML);
-            attr.setValue(u.formatTextforUpload(headingText,CURRENT_MODE));
-            selectsElement.setAttributeNode(attr);
-            if (s1 != null) {
-                attr = doc.createAttribute(GTX_HEADING_AT_SOUND_UUID);
-                attr.setValue(s1);
-                selectsElement.setAttributeNode(attr);
-            }
-        }
-        if (isSelect(st.curr.names[j])) {
-            j++;
-        }
-        selloop:
-        do {
-            if (st.curr.names[j].trim().equals("")) {
-                j++;
-                continue;
-            }
-            if (st.curr.levels[j] <= headingtextbase) {
-                htext = null;
-            }
-            if (isSelect(st.curr.names[j])) {
-                if (!(st.curr.levels.length > j + 1 && st.curr.levels[j] >= st.curr.levels[j + 1])) {
-                    j = doSelectsGame(topicTreeList, st, doc, gameElement, selectsElement, htext, st2, j, selectsj, extraGameBlockType, games);
-                }
-            } else if (st.curr.names[j].startsWith(GTX_HEADING)) {
-                lastheading = st.curr.names[j];
-                htext = u.formatTextforUpload(st.curr.names[j].substring(GTX_HEADING.length()),CURRENT_MODE);
-                if (st.curr.names.length > j + 1 && isSelect(st.curr.names[j + 1])) {
-                    headingtextbase = st.curr.levels[j];
-                } else {
-                    j = doSelectsGame(topicTreeList, st, doc, gameElement, selectsElement, htext, st2, j + 1, selectsj, extraGameBlockType, games);
-                }
-            } else {
-                htext = null;
-                j = doReferencesGame(topicTreeList, st, doc, gameElement, parentElement, selectsElement, st2, j, extraGameBlockType, String.valueOf(ti), games);
-                if (j < st.curr.levels.length) {
-                    if (isSelect(st.curr.names[j])) {
-                        if (st.curr.levels[j] > st.curr.levels[selectsj]) {
-                            return j - 1;
-                        } else {
-                            return j - 1;
-                        }
-                    } else if (st.curr.levels[j] <= st.curr.levels[selectsj]) {
-                        return j - 1;
-                    } else if (st.curr.names[j].startsWith(GTX_HEADING)) {
-                        return j - 1;
-                    }
-                }
-            }
-            j++;
-        } while (j < st.curr.levels.length && st.curr.levels[j] > newbase);
-        return j - 1;
-    }
-
-    int doReferences(topicTree topicTreeList, saveTree1 st, Document doc, Element parentElement, saveTree1.saveTree2 st2, int j, int extraGameBlockType, String depth, String games[]) {
-        int base = st.curr.levels[j - 1]; // the select level
-
-        if (uploadStageUploadRest) {
-            if (t.name.equals("revise letters  a i s t p m d g c")) {
-                int ff;
-                ff = 9;
-            }
-            if (t.name.equals("-oo- as in 'food'")) {
-                int ff;
-                ff = 9;
-            }
-        }
-
-        String attributeText = null;
-        int attributeLevel = -1;
-        attributeCount = -1;
-        attributeIndexCount = -1;
-        String filters[] = null;
-
-        Element refrencesElement = doc.createElement(GTX_REFERENCES_XML + depth);
-        parentElement.appendChild(refrencesElement);
-        String wordIDs[] = new String[]{};
-        int lastAllOrNoneLevel = -1;
-        doloop:
-        do {
-            String currtext = st.curr.names[j];
-            if (currtext.startsWith(GTX_ALLORNONE)) {
-                lastAllOrNoneLevel = st.curr.levels[j];
-            }
-            if (currtext.indexOf("*") >= 0) {
-                do {
-                    filters = u.addString(filters, st.curr.names[j]);
-                    j++;
-                    int h;
-                    h = 0;
-                } while (st.curr.names[j].indexOf("*") >= 0);
-                continue doloop;
-            }
-            if (filters != null && (games != null && games.length > 0) && uploadStageUploadRest) {
-                word www[] = t.getAllWordsBoth();    // standard and extended
-                for (int i = 0; i < www.length; i++) {
-                    if (www[i].value.startsWith("\\")) {
-                        continue;
-                    }     
-                    String f = getTargetWithAnyPattern(www[i].v(), filters);
-                    String isTarget = f == null ? "0" : "1";
-                    wordIDs = u.addString(wordIDs, String.valueOf(addWordElement(st, doc, refrencesElement, j, attributeText, extraGameBlockType, games, www[i], isTarget)));
-                }
-            }
-            if (st.curr.levels[j] <= attributeLevel) {
-                attributeLevel = -1;
-                attributeText = null;
-                attributeIndexCount = -1;
-                refrencesElement = doc.createElement(GTX_REFERENCES_XML + depth);
-                parentElement.appendChild(refrencesElement);
-                wordIDs = new String[]{};
-            }
-            if (attributeLevel < 0) {
-                attributeText = (currtext.startsWith(GTX_ALLORNONE) || currtext.startsWith(GTX_PAIRS)) ? GTX_ALLORNONE_AT_XML : null;
-                if (attributeText != null) {
-                    attributeLevel = st.curr.levels[j];
-                    attributeCount++;
-                    j++;
-                    int h;
-                    h = 0;
-                }
-            }
-            String type;
-            boolean istopic = st.curr.names[j].startsWith(topicTree.ISTOPIC);
-            if (istopic) {
-                type = "1";
-            } else {
-                boolean ispath = st.curr.names[j].startsWith(topicTree.ISPATH);
-                if (ispath) {
-                    type = "2";
-                } else {
-                    type = "0";
-                }
-            }
-
-            if (type.equals("1") || type.equals("2")) {
-                boolean extendedtoo = false;
-                String top;
-                String strpt = "«publictopics»";
-
-                top = st.curr.names[j].substring(strpt.length());
-
-                boolean wantExtendedFromRefsGame = false;
-                if (games != null && games.length > 0) {
-                    for (int i = 0; i < games.length; i++) {
-                        if (u.findString(GTX_WANT_EXTENDED_FROM_REFS_GAMES, games[i]) >= 0) {
-                            wantExtendedFromRefsGame = true;
-                            break;
-                        }
-                    }
-                }
-                if (st.curr.names[j].endsWith("+")) {
-                    top = top.substring(0, top.length() - 1);
-                    extendedtoo = true;
-                } else if (wantExtendedFromRefsGame) {
-                    extendedtoo = true;
-                }
-                // is a reference to a whole unit
-                topic tts[] = new topic[]{};
-                if (type.equals("2")) {
-                    topic t[] = topicTree.getTopics(st.curr.names[j]);
-                    for (int it = 0; it < t.length; ++it) {
-                        tts = u.addTopic(tts, t[it]);
-                    }
-                } else {
-                    tts = u.addTopic(tts, new topic(u.absoluteToRelative(sharkStartFrame.publicTopicLib[0]), top, null, null));
-                }
-                word www[] = new word[]{};
-                for (int i = 0; i < tts.length; i++) {
-                    www = u.addWords(www, tts[i].getAllWords(extendedtoo));
-                }
-                for (int i = 0; i < www.length; i++) {
-                    if (www[i].value.startsWith("\\")) {
-                        continue;
-                    }
-                    String f = getTargetWithAnyPattern(www[i].v(), filters);
-                    String isTarget = f == null ? "0" : "1";
-                    wordIDs = u.addString(wordIDs, String.valueOf(addWordElement(st, doc, refrencesElement, j, attributeText, extraGameBlockType, games, www[i], isTarget)));
-
-                }
-                www = u.stripdups(www);
-            }
-            if (type.equals("0")) {
-                word w = new word(st.curr.names[j], "publictopics");
-                String f = getTargetWithAnyPattern(w.v(), filters);
-                String isTarget = f == null ? "0" : "1";
-                wordIDs = u.addString(wordIDs, String.valueOf(addWordElement(st, doc, refrencesElement, j, attributeText, extraGameBlockType, games, new word(st.curr.names[j], "publictopics"), isTarget)));
-            }
-            j++;
-            if (attributeLevel < 0 || st.curr.levels[j] <= attributeLevel) {
-                if (wordIDs.length > 0) {
-                    Attr attr = doc.createAttribute("WordIDs");
-                    attr.setValue(u.combineString(wordIDs, ","));
-                    refrencesElement.setAttributeNode(attr);
-                }
-                if (attributeText != null && attributeText.equals("AllOrNone")) {
-                    Attr attr = doc.createAttribute("AllOrNones");
-                    attr.setValue("1");
-                    refrencesElement.setAttributeNode(attr);
-                }
-            }
-
-        } while (j < st.curr.levels.length && st.curr.levels[j] > base);
-
-        return j;
-    }
-    
-    
-    int doReferencesJson(topicTree topicTreeList, saveTree1 st, JSONObject doc, saveTree1.saveTree2 st2, int j, int extraGameBlockType, String depth, String games[]) {
-        int base = st.curr.levels[j - 1]; // the select level
-
-        if (uploadStageUploadRest) {
-            if (t.name.equals("revise letters  a i s t p m d g c")) {
-                int ff;
-                ff = 9;
-            }
-            if (t.name.equals("-oo- as in 'food'")) {
-                int ff;
-                ff = 9;
-            }
-        }
-
-        String attributeText = null;
-        int attributeLevel = -1;
-        attributeCount = -1;
-        attributeIndexCount = -1;
-        String filters[] = null;
-        
-        JSONArray references = new JSONArray();
-        
-        
-        JSONObject reference = new JSONObject();
-       
-        /*
-        Element refrencesElement = doc.createElement(GTX_REFERENCES_XML + depth);
-        parentElement.appendChild(refrencesElement);
-*/
-        String wordIDs[] = new String[]{};
-        doloop:
-        do {
-            String currtext = st.curr.names[j];
-            if (currtext.indexOf("*") >= 0) {
-                do {
-                    filters = u.addString(filters, st.curr.names[j]);
-                    j++;
-                    int h;
-                    h = 0;
-                } while (st.curr.names[j].indexOf("*") >= 0);
-                continue doloop;
-            }
-            if (filters != null && (games != null && games.length > 0) && uploadStageUploadRest) {
-                word www[] = t.getAllWordsBoth();    // standard and extended
-                for (int i = 0; i < www.length; i++) {
-                    if (www[i].value.startsWith("\\")) {
-                        continue;
-                    }     
-                    String f = getTargetWithAnyPattern(www[i].v(), filters);
-                    String isTarget = f == null ? "0" : "1";
-                    wordIDs = u.addString(wordIDs, String.valueOf(addWordElementJson(st, reference, j, attributeText, extraGameBlockType, games, www[i], isTarget)));
-                }
-            }
-            if (st.curr.levels[j] <= attributeLevel) {
-                attributeLevel = -1;
-                attributeText = null;
-                attributeIndexCount = -1;
-                /*
-                JSONArray references2 = new JSONArray();
-                references.add(references2);
-*/
-                wordIDs = new String[]{};
-            }
-            if (attributeLevel < 0) {
-                attributeText = (currtext.startsWith(GTX_ALLORNONE) || currtext.startsWith(GTX_PAIRS)) ? GTX_ALLORNONE_AT_XML : null;
-                if (attributeText != null) {
-                    attributeLevel = st.curr.levels[j];
-                    attributeCount++;
-                    j++;
-                    int h;
-                    h = 0;
-                }
-            }
-            String type;
-            boolean istopic = st.curr.names[j].startsWith(topicTree.ISTOPIC);
-            if (istopic) {
-                type = "1";
-            } else {
-                boolean ispath = st.curr.names[j].startsWith(topicTree.ISPATH);
-                if (ispath) {
-                    type = "2";
-                } else {
-                    type = "0";
-                }
-            }
-
-            if (type.equals("1") || type.equals("2")) {
-                boolean extendedtoo = false;
-                String top;
-                String strpt = "«publictopics»";
-
-                top = st.curr.names[j].substring(strpt.length());
-
-                boolean wantExtendedFromRefsGame = false;
-                if (games != null && games.length > 0) {
-                    for (int i = 0; i < games.length; i++) {
-                        if (u.findString(GTX_WANT_EXTENDED_FROM_REFS_GAMES, games[i]) >= 0) {
-                            wantExtendedFromRefsGame = true;
-                            break;
-                        }
-                    }
-                }
-                if (st.curr.names[j].endsWith("+")) {
-                    top = top.substring(0, top.length() - 1);
-                    extendedtoo = true;
-                } else if (wantExtendedFromRefsGame) {
-                    extendedtoo = true;
-                }
-                // is a reference to a whole unit
-                topic tts[] = new topic[]{};
-                if (type.equals("2")) {
-                    topic t[] = topicTree.getTopics(st.curr.names[j]);
-                    for (int it = 0; it < t.length; ++it) {
-                        tts = u.addTopic(tts, t[it]);
-                    }
-                } else {
-                    tts = u.addTopic(tts, new topic(u.absoluteToRelative(sharkStartFrame.publicTopicLib[0]), top, null, null));
-                }
-                word www[] = new word[]{};
-                for (int i = 0; i < tts.length; i++) {
-                    www = u.addWords(www, tts[i].getAllWords(extendedtoo));
-                }
-                for (int i = 0; i < www.length; i++) {
-                    if (www[i].value.startsWith("\\")) {
-                        continue;
-                    }
-                    String f = getTargetWithAnyPattern(www[i].v(), filters);
-                    String isTarget = f == null ? "0" : "1";
-                    wordIDs = u.addString(wordIDs, String.valueOf(addWordElementJson(st, reference, j, attributeText, extraGameBlockType, games, www[i], isTarget)));
-
-                }
-                www = u.stripdups(www);
-            }
-            if (type.equals("0")) {
-                word w = new word(st.curr.names[j], "publictopics");
-                String f = getTargetWithAnyPattern(w.v(), filters);
-                String isTarget = f == null ? "0" : "1";
-                wordIDs = u.addString(wordIDs, String.valueOf(addWordElementJson(st, reference, j, attributeText, extraGameBlockType, games, new word(st.curr.names[j], "publictopics"), isTarget)));
-            }
-            j++;
-            if (attributeLevel < 0 || st.curr.levels[j] <= attributeLevel) {
-                if (wordIDs.length > 0) {
-                    
-                    reference.put("WordIDs", u.combineString(wordIDs, ","));
-                   
-                }
-                if (attributeText != null && attributeText.equals("AllOrNone")) {
-                    
-                    reference.put("AllOrNones", "1");
-                }
-            }
-            
-            references.add(reference);
-
-        } while (j < st.curr.levels.length && st.curr.levels[j] > base);
-        doc.put("references", references);
-        
-        
-        return j;
-    }
-
-    int doReferencesGame(topicTree topicTreeList, saveTree1 st, Document doc, Element gameElement, Element parentParentElement, Element parentElement, saveTree1.saveTree2 st2, int j, int extraGameBlockType, String depth, String games[]) {
-        int base = st.curr.levels[j - 1]; // the select level
-        String attributeText = null;
-        int attributeLevel = -1;
-        attributeCount = -1;
-        attributeIndexCount = -1;
-        String filters[] = null;
-        String gType = gameElement.getAttribute(GTX_TB_NUM_AT_GAMEBLOCKTYPE);
-        word words_yes[] = new word[]{};
-        String wordPatterns[] = new String[]{};
-        word words_no[] = new word[]{};
-
-        Element refrencesElement = doc.createElement(GTX_REFERENCES_XML + depth);
-        parentElement.appendChild(refrencesElement);
-        gameReferenceNodeCount++;
-        String wordIDs[] = new String[]{};
-
-        // if no select in a helicopter game, add one of select 9
-        // if select no exists for helicopter game and is over 9, change it to 9.
-        if ((gType.equals(TOPICBLOCKGAMETYPE_HELICOPTERLISTEN) || gType.equals(TOPICBLOCKGAMETYPE_HELICOPTERSPELL))) {
-            String sel = parentElement.getAttribute(GTX_SELECTNO_AT_XML);
-            Element currEle = parentElement;
-            if (sel == null || sel.trim().equals("")) {
-                sel = parentParentElement.getAttribute(GTX_SELECTNO_AT_XML);
-                currEle = parentParentElement;
-            }
-            if (sel == null || sel.trim().equals("")) {
-                parentElement.setAttribute(GTX_SELECTNO_AT_XML, String.valueOf(HELICOPTERMAXSELECT));
-            } else {
-                try {
-                    int k = Integer.parseInt(sel);
-                    if (k > HELICOPTERMAXSELECT) {
-                        currEle.setAttribute(GTX_SELECTNO_AT_XML, String.valueOf(HELICOPTERMAXSELECT));
-                    }
-                } catch (Exception ee) {
-                    currEle.setAttribute(GTX_SELECTNO_AT_XML, String.valueOf(HELICOPTERMAXSELECT));
-                }
-            }
-        }
-
-        doloop:
-        do {
-            String currtext = st.curr.names[j];
-            if (currtext.indexOf("*") >= 0) {
-                do {
-                    filters = u.addString(filters, st.curr.names[j]);
-                    j++;
-                } while (st.curr.names[j].indexOf("*") >= 0);
-                if (j < st.curr.levels.length && st.curr.levels[j] < st.curr.levels[j - 1] && words_yes.length == 0 && words_no.length == 0) {
-                    if (filters != null && (games != null && games.length > 0)) {
-                        word www[] = t.getAllWordsBoth();    // standard and extended
-                        www = u.stripdups(www);
-                        for (int i = 0; i < www.length; i++) {
-                            if (www[i].value.startsWith("\\")) {
-                                continue;
-                            }
-                            String s;
-                            if ((s = getTargetWithAnyPattern(www[i].v(), filters)) != null) {
-                                words_yes = u.addWords(words_yes, www[i]);
-                                wordPatterns = u.addString(wordPatterns, www[i].v().equals(s) ? null : s);
-                            } else {
-                                words_no = u.addWords(words_no, www[i]);
-                            }
-                        }
-                    }
-                }
-
-                continue doloop;
-            }
-            if (filters != null && (games != null && games.length > 0)) {
-                word www[] = t.getAllWordsBoth();    // standard and extended
-                www = u.stripdups(www);
-                for (int i = 0; i < www.length; i++) {
-                    if (www[i].value.startsWith("\\")) {
-                        continue;
-                    }
-                    String s;
-                    if ((s = getTargetWithAnyPattern(www[i].v(), filters)) != null) {
-                        words_yes = u.addWords(words_yes, www[i]);
-                        wordPatterns = u.addString(wordPatterns, www[i].v().equals(s) ? null : s);
-                    } else {
-                        words_no = u.addWords(words_no, www[i]);
-                    }
-                }
-            }
-            if (st.curr.levels[j] <= attributeLevel) {
-                attributeLevel = -1;
-                attributeText = null;
-                attributeIndexCount = -1;
-                refrencesElement = doc.createElement(GTX_REFERENCES_XML + depth);
-                parentElement.appendChild(refrencesElement);
-                wordIDs = new String[]{};
-            }
-            if (attributeLevel < 0) {
-                attributeText = (currtext.startsWith(GTX_ALLORNONE) || currtext.startsWith(GTX_PAIRS)) ? GTX_ALLORNONE_AT_XML : null;
-                if (attributeText != null) {
-                    attributeLevel = st.curr.levels[j];
-                    attributeCount++;
-                    j++;
-                    int h;
-                    h = 0;
-                }
-            }
-            String type;
-            boolean istopic = st.curr.names[j].startsWith(topicTree.ISTOPIC);
-            if (istopic) {
-                type = "1";
-            } else {
-                boolean ispath = st.curr.names[j].startsWith(topicTree.ISPATH);
-                if (ispath) {
-                    type = "2";
-                } else {
-                    type = "0";
-                }
-            }
-            if (type.equals("1") || type.equals("2")) {
-                boolean extendedtoo = false;
-                String top;
-                String strpt = "«publictopics»";
-                top = st.curr.names[j].substring(strpt.length());
-                boolean wantExtendedFromRefsGame = false;
-                if (games != null && games.length > 0) {
-                    for (int i = 0; i < games.length; i++) {
-                        if (u.findString(GTX_WANT_EXTENDED_FROM_REFS_GAMES, games[i]) >= 0) {
-                            wantExtendedFromRefsGame = true;
-                            break;
-                        }
-                    }
-                }
-                if (st.curr.names[j].endsWith("+")) {
-                    top = top.substring(0, top.length() - 1);
-                    extendedtoo = true;
-                } else if (wantExtendedFromRefsGame) {
-                    extendedtoo = true;
-                }
-                // is a reference to a whole unit
-                topic tts[] = new topic[]{};
-                if (type.equals("2")) {
-                    topic t[] = topicTree.getTopics(st.curr.names[j]);
-                    for (int it = 0; it < t.length; ++it) {
-                        tts = u.addTopic(tts, t[it]);
-                    }
-                } else {
-                    topic t1 = new topic(u.absoluteToRelative(sharkStartFrame.publicTopicLib[0]), top, null, null);
-                    tts = u.addTopic(tts, t1);
-                }
-                word www[] = new word[]{};
-                for (int i = 0; i < tts.length; i++) {
-                    www = u.addWords(www, tts[i].getAllWords(extendedtoo));
-                }
-                www = u.stripdups(www);
-                for (int i = 0; i < www.length; i++) {
-                    if (www[i].value.startsWith("\\")) {
-                        continue;
-                    }  
-                    String s;
-                    if ((s = getTargetWithAnyPattern(www[i].v(), filters)) != null) {
-                        words_yes = u.addWords(words_yes, www[i]);
-                        wordPatterns = u.addString(wordPatterns, www[i].v().equals(s) ? null : s);
-                    } else {
-                        words_no = u.addWords(words_no, www[i]);
-                    }
-                }
-            }
-            if (type.equals("0")) {
-                word w = new word(st.curr.names[j], "publictopics");
-                String s;
-                if ((s = getTargetWithAnyPattern(w.v(), filters)) != null) {
-                    words_yes = u.addWords(words_yes, w);
-                    wordPatterns = u.addString(wordPatterns, w.v().equals(s) ? null : s);
-                } else {
-                    words_no = u.addWords(words_no, w);
-                }
-            }
-            j++;
-        } while (j < st.curr.levels.length && st.curr.levels[j] > base);
-
-        if (helicopterNoColumnFilters != null && lastheading.startsWith("Heading:No")) {
-            words_yes = getWordsWithoutPattern(words_yes, helicopterNoColumnFilters);
-        }
-
-        for (int i = 0; i < words_yes.length; i++) {
-            int g = doWordNew(words_yes[i], null, wordPatterns[i], t.mySQL_Topic_ID, null, new int[]{WORD_TYPE_PATTERNGAME});
-            if (u.findString(wordIDs, String.valueOf(g)) < 0) {
-                wordIDs = u.addString(wordIDs, String.valueOf(g));
-            }
-        }
-        if (wordIDs.length > 0 && (gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES) || gType.equals(TOPICBLOCKGAMETYPE_PATTERN))) {
-            wordIDs = makeUpTheNumbers(wordIDs, gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES) ? snakesandladders.ALLOCGOOD : pattern.ALLOCGOOD);
-        }
-        if (attributeLevel < 0 || st.curr.levels[j] <= attributeLevel) {
-            if (wordIDs.length > 0) {
-                Attr attr = doc.createAttribute("WordIDs");
-                attr.setValue(u.combineString(wordIDs, ","));
-                refrencesElement.setAttributeNode(attr);
-                if (gType != null) {
-                    if (gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES) || gType.equals(TOPICBLOCKGAMETYPE_PATTERN)) {
-                        attr = doc.createAttribute(GTX_SELECTNO_AT_XML);
-                        boolean isSnakes = gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES);
-                        if (gameReferenceNodeCount > 1) {
-                            attr.setValue(String.valueOf(Math.min(isSnakes ? selectCountDistractorNoSnakesAndLadders : selectCountDistractorNoPattern, wordIDs.length)));
-                            parentElement.setAttribute(GTX_HEADING_AT_XML, STR_NO);
-                            parentElement.removeAttribute(GTX_HEADING_AT_SOUND_UUID);
-                        } else {
-                            attr.setValue(String.valueOf(Math.min(isSnakes ? selectCountTargetNoSnakesAndLadders : selectCountTargetNoPattern, wordIDs.length)));
-                        }
-                        refrencesElement.setAttributeNode(attr);
-
-                    }
-                }
-            }
-            if (attributeText != null && attributeText.equals("AllOrNone")) {
-                Attr attr = doc.createAttribute("AllOrNones");
-                attr.setValue("1");
-                refrencesElement.setAttributeNode(attr);
-            }
-        }
-
-        if (gType != null) {
-            String nonWordIds[] = new String[]{};
-            for (int i = 0; words_no != null && i < words_no.length; i++) {
-                int g = doWordNew(words_no[i], t.mySQL_Topic_ID, null, new int[]{WORD_TYPE_PATTERNGAME});
-                if (u.findString(nonWordIds, String.valueOf(g)) < 0) {
-                    nonWordIds = u.addString(nonWordIds, String.valueOf(g));
-                }
-            }
-
-            if (nonWordIds.length > 0 && (gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES) || gType.equals(TOPICBLOCKGAMETYPE_PATTERN))) {
-                nonWordIds = makeUpTheNumbers(nonWordIds, gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES) ? snakesandladders.ALLOCBAD : pattern.ALLOCBAD);
-            }
-
-            if (nonWordIds.length > 0 && (gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES) || gType.equals(TOPICBLOCKGAMETYPE_PATTERN))) {
-                // creating the No column that doesn't exist in publictopics
-                Attr attr = doc.createAttribute(GTX_HEADING_AT_XML);
-                attr.setValue(STR_NO);
-                Element parentElement2 = doc.createElement(parentElement.getNodeName());
-                parentElement2.setAttributeNode(attr);
-                parentParentElement.appendChild(parentElement2);
-                Element referencesElement = doc.createElement(GTX_REFERENCES_XML + depth);
-                parentElement2.appendChild(referencesElement);
-                boolean isSnakes = gType.equals(TOPICBLOCKGAMETYPE_PATTERNSNAKES);
-                attr = doc.createAttribute(GTX_SELECTNO_AT_XML);
-                attr.setValue(String.valueOf(Math.min(isSnakes ? selectCountDistractorNoSnakesAndLadders : selectCountDistractorNoPattern, nonWordIds.length)));
-                parentElement2.setAttributeNode(attr);
-                attr = doc.createAttribute("WordIDs");
-                attr.setValue(u.combineString(nonWordIds, ","));
-                referencesElement.setAttributeNode(attr);
-
-                //if group select, need to create a containing select
-                String s1 = parentParentElement.getAttribute(GTX_SELECTGROUPNO_AT_XML + String.valueOf(Integer.parseInt(depth) - 1));
-                if (s1 == null || s1.trim().equals("")) // not sure if some have numbers and some don't??
-                {
-                    s1 = parentParentElement.getAttribute(GTX_SELECTGROUPNO_AT_XML);
-                }
-                boolean isGroupSelect = s1 != null && !s1.trim().equals("");
-                if (isGroupSelect) {
-                    parentParentElement.removeChild(parentElement);
-                    parentParentElement.removeChild(parentElement2);
-                    Element newGroupEle = doc.createElement(GTX_SELECT_XML + depth);
-                    parentParentElement.appendChild(newGroupEle);
-                    newGroupEle.appendChild(parentElement);
-                    newGroupEle.appendChild(parentElement2);
-                    doc.renameNode(parentElement.getFirstChild(), "", GTX_REFERENCES_XML + String.valueOf(Integer.parseInt(depth) + 1));
-                    doc.renameNode(parentElement, "", GTX_SELECT_XML + String.valueOf(Integer.parseInt(depth) + 1));
-                    doc.renameNode(parentElement2, "", GTX_SELECT_XML + String.valueOf(Integer.parseInt(depth) + 1));
-                    doc.renameNode(referencesElement, "", GTX_REFERENCES_XML + String.valueOf(Integer.parseInt(depth) + 1));
-                    gameReferenceNodeCount = 0;
-                }
-            }
-        }
-        return j;
-    }
-
     String[] makeUpTheNumbers(String s[], int wanted) {
         String ss[] = s;
         while (ss.length < wanted) {
@@ -6424,74 +3111,6 @@ public class MYSQLUpload {
         return ss;
     }
 
-    int addWordElement(saveTree1 st, Document doc, Element parentElement, int j, String attributeText, int extraGameBlockType, String games[], word w, String isTarget) {
-        int wordid = doWordNew(w, t.mySQL_Topic_ID, null, new int[]{WORD_TYPE_EXTENDED});
-        if (wordid < 0) {
-            int g;
-            g = 0;
-        }
-        Element refrenceElement = doc.createElement(GTX_REFERENCE_XML);
-        Attr attr = doc.createAttribute(GTX_REF_TYPE_AT_XML);
-        attr.setValue("0");
-        refrenceElement.setAttributeNode(attr);
-        if (attributeText != null) {
-            attributeIndexCount++;
-            attr = doc.createAttribute(attributeText);
-            attr.setValue(String.valueOf(attributeCount));
-            refrenceElement.setAttributeNode(attr);
-            attr = doc.createAttribute(GTX_ALLORNONE_INDEX_AT_XML);
-            attr.setValue(String.valueOf(attributeIndexCount));
-            refrenceElement.setAttributeNode(attr);
-        }
-        if (isTarget != null) {
-            attr = doc.createAttribute(GTX_IS_WORD_TARGET_AT_XML);
-            attr.setValue(isTarget);
-            refrenceElement.setAttributeNode(attr);
-        }
-        attr = doc.createAttribute("WordID");
-        attr.setValue(String.valueOf(wordid));
-        refrenceElement.setAttributeNode(attr);
-        int b = doReferencesWord(t, w.value, st, j, extraGameBlockType, doc, refrenceElement);
-        if (b >= 0) {
-            if (!isDuplicate(parentElement, refrenceElement)) {
-                parentElement.appendChild(refrenceElement);
-                return wordid;
-            } else {
-                int gg;
-                gg = 9;
-            }
-        } else {
-            int gg;
-            gg = 0;
-        }
-        return -1;
-    }
-
-    
-     int addWordElementJson(saveTree1 st, JSONObject doc,int j, String attributeText, int extraGameBlockType, String games[], word w, String isTarget) {
-        int wordid = doWordNew(w, t.mySQL_Topic_ID, null, new int[]{WORD_TYPE_EXTENDED});
-        if (wordid < 0) {
-            int g;
-            g = 0;
-        }
-        
-        doc.put(GTX_REF_TYPE_AT_XML, "0");
-
-        if (attributeText != null) {
-            attributeIndexCount++;
-            doc.put(attributeText, String.valueOf(attributeCount));
-            doc.put(GTX_ALLORNONE_INDEX_AT_XML, String.valueOf(attributeIndexCount));
-        }
-        if (isTarget != null) {
-            doc.put(GTX_IS_WORD_TARGET_AT_XML, isTarget);
-        }
-        
-        doc.put("Word", w.value);
-        
-     //   doReferencesWordJson(t, w.value, st, j, extraGameBlockType, doc, refrenceElement);
-
-        return -1;
-    }
     
     static boolean isDuplicate(Element parent, Element currentRef) {
         NodeList nodeList = currentRef.getElementsByTagName("Word");
@@ -6568,45 +3187,6 @@ public class MYSQLUpload {
         return w;
     }
 
-    int doReferencesWord(topic tt, String wordname, saveTree1 st, int j, int extraGameBlockType, Document doc, Element refrenceElement) {
-        String theword = wordname;
-        String root = null;
-        String suffix = null;
-        if (extraGameBlockType == GAME_BLOCK_TYPE_SUFFIX) {
-            String full = wordname;
-            int k;
-            if ((k = full.indexOf("+")) >= 0) {
-                root = full.substring(0, k);
-                suffix = full.substring(k + 1);
-                theword = getRootSuffix(full, root, suffix);
-            }
-        }
-        String bracketedWord = null;
-        if (wordname.indexOf('[') >= 0 && wordname.indexOf(']') >= 0) {
-            bracketedWord = wordname;
-        }
-        return doWord(new word(theword, "publictopics"), tt, doc, refrenceElement, false, false, bracketedWord, root, suffix);
-    }
-    
-     int doReferencesWordJson(topic tt, String wordname, saveTree1 st, int j, int extraGameBlockType, Document doc, Element refrenceElement) {
-        String theword = wordname;
-        String root = null;
-        String suffix = null;
-        if (extraGameBlockType == GAME_BLOCK_TYPE_SUFFIX) {
-            String full = wordname;
-            int k;
-            if ((k = full.indexOf("+")) >= 0) {
-                root = full.substring(0, k);
-                suffix = full.substring(k + 1);
-                theword = getRootSuffix(full, root, suffix);
-            }
-        }
-        String bracketedWord = null;
-        if (wordname.indexOf('[') >= 0 && wordname.indexOf(']') >= 0) {
-            bracketedWord = wordname;
-        }
-        return doWord(new word(theword, "publictopics"), tt, doc, refrenceElement, false, false, bracketedWord, root, suffix);
-    }   
 
     static String getGamesCategory(jnode jn) {
         int c = sharkStartFrame.mainFrame.publicGameTree.root.getChildAt(0).getChildCount();
@@ -6618,10 +3198,7 @@ public class MYSQLUpload {
         return null;
     }
 
-    static public String getTopicXML2(saveTree1 st, String key, boolean returnBool) {
-        if (key.equals(GTX_TOPICNAME)) {
-            return st.curr.names[0];
-        }
+    static public String getTopicDetail(saveTree1 st, String key, boolean returnBool) {
         for (int j = 0; j < st.curr.names.length; ++j) { //For 2.1
             if (st.curr.names[j].startsWith(GTX_TEACHINGNOTE) && key.equals((GTX_TEACHINGNOTE))) {
                 int k = j + 1;
@@ -6630,7 +3207,7 @@ public class MYSQLUpload {
                     tnote += " " + st.curr.names[k].substring(key.length());
                     k++;
                 }
-                return u.setTextHtmlFormattedForUpload(tnote, CURRENT_MODE);
+                return u.setTextHtmlFormattedForUpload(tnote);
             } else if (st.curr.levels[j] == 1 && st.curr.names[j].startsWith(key)) {
                 if (st.curr.names[j].trim().length() <= key.length()) {
                     return "1";
@@ -7111,8 +3688,8 @@ public class MYSQLUpload {
     }       
 
     int getAPPriority(treeDetails tree) {
-        String apPriority1 = getTopicXML2(tree.st, topic.types[topic.APPRIORITY1], true);
-        String apPriority2 = getTopicXML2(tree.st, topic.types[topic.APPRIORITY2], true);
+        String apPriority1 = getTopicDetail(tree.st, topic.types[topic.APPRIORITY1], true);
+        String apPriority2 = getTopicDetail(tree.st, topic.types[topic.APPRIORITY2], true);
         int apPriority = 0;
         if (apPriority1.equals("1")) {
             apPriority = 1;
@@ -7245,14 +3822,14 @@ public class MYSQLUpload {
         */
         sentence sent = (new sentence(tree.st.curr.names[i], null));
         subSelect.put("desktopSelectIndex", selectIndex);
-        subSelect.put("sentence", u.formatTextforUpload(sent.stripclozereplacewildcard(),CURRENT_MODE));
+        subSelect.put("sentence", u.formatTextforUpload(sent.stripclozereplacewildcard()));
         
         subSelect.put("rightWords", getSentenceWords(targetWords, getSentenceTargetImages(tree.st.curr.names[i])));
         String sentText = removeSentenceImageSuffix(tree.st.curr.names[i].toLowerCase().replace("|", " "));
         subSelect.put("soundPeep", tor.findJsonRecording(jsonRecResults, getSoundDatabaseForSentenceGame(tree, uploadType, false), sentText));
         if(uploadType == UPLOAD_TYPE_SENTENCES_SIMPLE){   
             String simpleSentence = sent.stripcloze();
-            subSelect.put("plain_sentence", u.formatTextforUpload(simpleSentence,CURRENT_MODE));
+            subSelect.put("plain_sentence", u.formatTextforUpload(simpleSentence));
             subSelect.put(
                    "sound", 
                    tor.findJsonRecording(
@@ -7477,7 +4054,7 @@ public class MYSQLUpload {
         String details[] = getRecordingFileName(tree, w);
         if(details == null){      
             System.out.println("....NO SOUND FOR: " + w.v());
-            return null;
+            System.exit(0);
         }
         return tor.findJsonRecording(jsonRecResults, details[1], details[0]);
     }
@@ -7989,9 +4566,6 @@ public class MYSQLUpload {
         }
     
         String getTopicDetail(treeDetails tree, String key, boolean returnBool) {
-            if (key.equals(GTX_TOPICNAME)) {
-                return tree.st.curr.names[0];
-            }
             for (int j = 0; j < tree.st.curr.names.length; ++j) { //For 2.1
                 if (tree.st.curr.names[j].startsWith(GTX_TEACHINGNOTE) && key.equals((GTX_TEACHINGNOTE))) {
                     int k = j + 1;
@@ -8000,7 +4574,7 @@ public class MYSQLUpload {
                         tnote += " " + tree.st.curr.names[k].substring(key.length());
                         k++;
                     }
-                    return u.setTextHtmlFormattedForUpload(tnote, CURRENT_MODE);
+                    return u.setTextHtmlFormattedForUpload(tnote);
                 } else if (tree.st.curr.levels[j] == 1 && tree.st.curr.names[j].startsWith(key)) {
                     if (tree.st.curr.names[j].trim().length() <= key.length()) {
                         return "1";
@@ -8010,6 +4584,57 @@ public class MYSQLUpload {
             }
             return returnBool ? "0" : null;
         }
+        
+        boolean clearJson() {
+            // Construct the path to the version folder
+            String versionFolderPath = RESTJSONFOLDER + shark.sep
+                    + ENV_NAMES[currentEnvironment] + shark.sep
+                    + currentCourse + shark.sep
+                    + currCourseVersion;
+
+            File versionFolder = new File(versionFolderPath);
+
+            // If the folder doesn't exist, nothing to delete
+            if (!versionFolder.exists()) {
+                return true;
+            }
+
+            // Delete the folder recursively
+            return deleteDirectory(versionFolder);
+        }
+        
+        private boolean deleteDirectory(File directory) {
+            if (directory == null || !directory.exists()) {
+                return true;
+            }
+
+            // Get all files and subdirectories
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        // Recursively delete subdirectories
+                        if (!deleteDirectory(file)) {
+                            return false;
+                        }
+                    } else {
+                        // Delete files
+                        if (!file.delete()) {
+                            System.err.println("Failed to delete file: " + file.getAbsolutePath());
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // Finally delete the empty directory
+            boolean deleted = directory.delete();
+            if (!deleted) {
+                System.err.println("Failed to delete directory: " + directory.getAbsolutePath());
+            }
+            return deleted;
+        }        
+        
         
         void writeJson(String topicName, String json) {
 
@@ -8099,19 +4724,17 @@ public class MYSQLUpload {
         return null;
     }        
     
-        private class treeDetails {
-            public topic t;
-            public saveTree1 st;
-            public topicTree topicTree;
-            public jnode jn;
+    private class treeDetails {
+        public topic t;
+        public saveTree1 st;
+        public topicTree topicTree;
+        public jnode jn;
             
-            treeDetails(topic tParam, saveTree1 stParam, topicTree topicTreeParam, jnode jnParam) {
-                t = tParam;
-                st = stParam;
-                topicTree = topicTreeParam;
-                jn = jnParam;
-            }
+        treeDetails(topic tParam, saveTree1 stParam, topicTree topicTreeParam, jnode jnParam) {
+            t = tParam;
+            st = stParam;
+            topicTree = topicTreeParam;
+            jn = jnParam;
         }
-    
-    
     }
+}

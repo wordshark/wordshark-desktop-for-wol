@@ -6,7 +6,6 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-import static shark.MYSQLUpload.MODE_VIA_DUMP;
 
 public class topic  extends sharkTree{
   static String types[] = new String[] {
@@ -3636,12 +3635,6 @@ public word[] getAllWords(boolean extended, boolean excludeteachingnotes) {
                                 wrds = makeUpTheNumbers(wrds, minWords);                            
                         }
                         for(int ip = 0;ip < wrds.length; ip++){  
-                            if(MYSQLUpload.CURRENT_MODE == MYSQLUpload.MODE_VIA_DUMP){
-                                int ggg = mysqlup.doWordNew(wrds[ip], null, getTargetWithAnyPattern(wrds[ip].v(), (String[])headingPatterns.get(i)), mysqlup.t.mySQL_Topic_ID, null, new int[]{mysqlup.WORD_TYPE_PATTERNGAME});
-//                            if(u.findString(wordIDs, String.valueOf(ggg)) < 0)   don't strip out duplicates - mucks up Pattern
-                                wordIDs = u.addString(wordIDs, String.valueOf(ggg));                 
-                            }
-                            else{
                        //     int ggg = mysqlup.doWordNew(wrds[ip], null, getTargetWithAnyPattern(wrds[ip].v(), (String[])headingPatterns.get(i)), mysqlup.t.mySQL_Topic_ID, null, new int[]{mysqlup.WORD_TYPE_PATTERNGAME});
 //                            if(u.findString(wordIDs, String.valueOf(ggg)) < 0)   don't strip out duplicates - mucks up Pattern
                                 boolean isSinglePhonicSound = wrds[ip].phonics && !wrds[ip].phonicsw;   
@@ -3650,9 +3643,6 @@ public word[] getAllWords(boolean extended, boolean excludeteachingnotes) {
                                 if(u.findString(wordIDs, wordString)<0){
                                     wordIDs = u.addString(wordIDs, wordString);
                                 }
-                                    
-                            }
- 
                         }                        
                     }
                     else{

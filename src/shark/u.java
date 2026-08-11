@@ -4298,31 +4298,10 @@ return new Color((int)red, (int)green, (int)blue);
   }
 //endPR^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^PR
   
-  public static String formatTextforUpload(String s, int uploadMode){
+  public static String formatTextforUpload(String s){
       if (s != null) {
         char c;
-        String str = "";
-        if(uploadMode == MYSQLUpload.MODE_VIA_DUMP){
-            for (int i = 0; i < s.length(); i++) {
-              c = s.charAt(i);
-              if (c == '\'')
-                str = str.concat("**1**");
-              else if (c == '"'){
-                str = str.concat("**4**");
-              }
-              else if (c == '+'){
-                str = str.concat("**3**");
-              }
-              else if (c == '&'){
-                str = str.concat("**2**");
-              }
-              else 
-                str = str.concat(String.valueOf(c));
-            }
-        }
-        else{
-            str = s;
-        }
+        String str = s;
         str = str.replaceAll("    ", " ");
         str = str.replaceAll("   ", " ");
         str = str.replaceAll("  ", " ");
@@ -4421,45 +4400,7 @@ public static void setupMenuItemHeight(){
 }
 
 
-    public static String setTextHtmlFormattedForUpload(String s, int uploadMode){
-        String open = uploadMode == MYSQLUpload.MODE_VIA_DUMP ? "££" : "<";
-        String close = uploadMode == MYSQLUpload.MODE_VIA_DUMP ? "&&" : ">";
-        char c[] = s.toCharArray();
-        String ret = "";
-        for(int i = 0; i < c.length; i++){
-            if(c[i]=='|') ret = ret+open+"br"+close;
-            else ret = ret+String.valueOf(c[i]);
-        }
-        int k;
-        while((k=ret.indexOf("^^^"))>=0){
-            String temp = ret.substring(k+3);
-            ret = ret.substring(0, k)+open+"i"+close+open+"b"+close;
-            k = temp.indexOf("^");
-            if(k>=0)
-                ret = ret + temp.substring(0, k)+open+"/b"+close+open+"/i"+close+temp.substring(k+1);
-        }
-        while((k=ret.indexOf("^^"))>=0){
-            String temp = ret.substring(k+2);
-            ret = ret.substring(0, k)+open+"b"+close;
-            k = temp.indexOf("^");
-            if(k>=0)
-                ret = ret + temp.substring(0, k)+open+"/b"+close+temp.substring(k+1);
-        }
-        while((k=ret.indexOf("^"))>=0){
-            String temp = ret.substring(k+1);
-            ret = ret.substring(0, k)+open+"i"+close;
-            k = temp.indexOf("^");
-            if(k>=0)
-                ret = ret + temp.substring(0, k)+open+"/i"+close+temp.substring(k+1);
-        }
-        return ret;
-    }
-    
-    
-    public static String setTextHtmlFormattedForUpload2(String s, int uploadMode){
-        if(uploadMode != MYSQLUpload.MODE_VIA_DUMP){
-            return s;
-        }
+    public static String setTextHtmlFormattedForUpload(String s){
         String open = "<";
         String close = ">";
         char c[] = s.toCharArray();
@@ -4492,8 +4433,7 @@ public static void setupMenuItemHeight(){
         }
         return ret;
     }
-
-
+    
  public static String getXMLElement(String filePath, String element){
     return u2_base.getXMLElement(filePath, element);
  }

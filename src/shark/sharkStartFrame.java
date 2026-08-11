@@ -6674,25 +6674,7 @@ public void clearStudentCourses() {
     manBar1.add(managestudent);
     if(wantSQL){
         JMenu sql = new JMenu("SQL");
-        JMenuItem jmiGamesGet = new JMenuItem();
         
-        jmiGamesGet.setText("Get games data");
-        jmiGamesGet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                MYSQLUpload msqlu = new MYSQLUpload();
-                msqlu.UploadGames(false);
-            }
-        });        
-        /*
-        JMenuItem jmiGames = new JMenuItem();
-        jmiGames.setText("Generate games data");
-        jmiGames.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                MYSQLUpload msqlu = new MYSQLUpload();
-                msqlu.UploadGames(true);
-            }
-        });
-        */
         
         JMenuItem jmiGenRecordings = new JMenuItem();
         jmiGenRecordings.setText("Do recordings upload");
@@ -6719,7 +6701,7 @@ public void clearStudentCourses() {
         jmiTopics.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 MYSQLUpload mysql = new MYSQLUpload();
-                 mysql.UploadGames(false);
+ //               mysql.UploadGames(false);
                 mysql.doTopicsPrint(topicTreeList);
             }
         });
@@ -11915,9 +11897,11 @@ topicTreeList.newSelection();
     wordTree.setfont();
     setListTexts();
 //endPR^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^PR
+
       if(MYSQLUpload.MYSQLGameFiltering){
           MYSQLUpload.gatherGames(gameTree);
       }
+   
   }
 
   void setusephonics(boolean phonicschange){
@@ -12568,7 +12552,10 @@ topicTreeList.newSelection();
    *  <li>Creates movers for the game icons - both those which are active and inactive.
    */
   void buildgamepanel2(boolean samelist) {
-    gamePanel.reset();
+      if(!MYSQLUpload.doingPort){
+          gamePanel.reset();
+      }
+    
     headfont[0] = treefont;
     titfont[0] = treefont;
     int i, j;
