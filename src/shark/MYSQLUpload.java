@@ -1655,9 +1655,8 @@ public class MYSQLUpload {
             MYSQLUpload.course = sel[n].get();
             currentCourse = sel[n].get();
             MYSQLGameFiltering = true;
-            clearJson();
             JSONObject unitsResponse = topicScanForUnits(topicTreeList, sel[n], n, courseids, coursenames);
-            topicScanForWordlists((JSONArray)unitsResponse.get("unit_ids"), topicTreeList, sel[n], n, courseids, coursenames);
+            topicScanForWordlists(Integer.parseInt(currCourseVersion), (JSONArray)unitsResponse.get("unit_ids"), topicTreeList, sel[n], n, courseids, coursenames);
         }
 
         doingPort = false;    
@@ -2287,8 +2286,7 @@ public class MYSQLUpload {
             postJsonObject.toJSONString(), currentEnvironment);   
     }
 
-    public void topicScanForWordlists(JSONArray unitIds, topicTree topicTreeList, jnode selnode, int p, String courseids[], String coursenames[]) {
-        JSONArray wordlistsJsonArray = new JSONArray();
+    public void topicScanForWordlists(int versionNo, JSONArray unitIds, topicTree topicTreeList, jnode selnode, int p, String courseids[], String coursenames[]) {
         boolean firstone = true;
         int unitIndex = -1;
         int wordlistIndex = -1;
@@ -2334,17 +2332,23 @@ public class MYSQLUpload {
             );
                     
             JSONObject wordlistJson = getTopicJsonForUpload(tree, Integer.parseInt(String.valueOf(unitIds.get(unitIndex))), wordlistIndex, selnode.get());
+            
+            JSONObject postJson = new JSONObject();
+            postJson.put("wordlist_data", wordlistJson);
+            postJson.put("version_id", versionNo);
 
-            wordlistsJsonArray.add(wordlistJson);
+            JSONObject postJsonObject = new JSONObject();
+            postJsonObject.put("json_data", postJson);
+
+            JSONObject responseJson = apiRequest(API_CONFIGS[currentEnvironment].url + "ports/wordlists/queue",
+                        postJsonObject.toString(), currentEnvironment);
             wordlistDoneCount++;
-            System.out.println("....Finished: " + sh + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
+            System.out.println(String.valueOf(responseJson.get("message")) + ": " + sh + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
         }
         
-        JSONObject postJsonObject = new JSONObject();
-        postJsonObject.put("json_data", wordlistsJsonArray);
-        writeJson(t.name, postJsonObject.toJSONString());
-        JSONObject responseJson = apiRequest(API_CONFIGS[currentEnvironment].url + "ports/wordlists",
-                    postJsonObject.toString(), currentEnvironment);
+        JSONObject responseJson = apiRequest(API_CONFIGS[currentEnvironment].url + "ports/versions/"+String.valueOf(versionNo)+"/process-imports",
+                    null, currentEnvironment);
+        System.out.println("FINISHED: Initiated wordlist jobs in the API");
         u.okmess(shark.programName, String.valueOf(responseJson.get("message")), sharkStartFrame.mainFrame);
     }    
     
@@ -4561,49 +4565,6 @@ public class MYSQLUpload {
                 }
             }
             return returnBool ? "0" : null;
-        }
-        
-        boolean clearJson() {
-            // Construct the path to the version folder
-            String jsonFilePath = RESTJSONFOLDER + shark.sep
-                + ENV_NAMES[currentEnvironment] + shark.sep
-                + currentCourse + shark.sep
-                + currentCourse + "_"
-                + currCourseVersion + ".json";
-
-            File jsonFile = new File(jsonFilePath);
-
-            // If the folder doesn't exist, nothing to delete
-            if (!jsonFile.exists()) {
-                return true;
-            }
-
-            return FileUtils.deleteQuietly(jsonFile);
-        }
-        
-        void writeJson(String topicName, String json) {
-
-            File f = new File(
-                RESTJSONFOLDER + shark.sep
-                + ENV_NAMES[currentEnvironment] + shark.sep
-                + currentCourse + shark.sep
-                + currentCourse + "_"
-                + currCourseVersion + ".json"
-            );
-
-            // Ensure parent directory exists
-            f.getParentFile().mkdirs();
-
-            
-            if (!f.exists()) {
-                PrintWriter pw = null;
-                try {
-                    pw = new PrintWriter(new FileWriter(f.getAbsolutePath()));
-                    pw.println(json);
-                    pw.flush();
-                } catch (Exception e) {
-                }
-            }
         }
         
         String toSafeFilename(String input) {
