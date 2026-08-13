@@ -45,6 +45,7 @@ import java.text.*;
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.io.FileUtils;
 /**
  *
  * @author paulr
@@ -801,7 +802,7 @@ public class MYSQLUpload {
         return ret;
     }
        
-     int apiGetId(String urlPath, String jsonInputString, int env) {
+     JSONObject apiRequest(String urlPath, String jsonInputString, int env) {
         if(API_CONFIGS[env].accessToken == null){
             setAccessToken(env);
         } 
@@ -834,18 +835,7 @@ public class MYSQLUpload {
                     response.append(responseLine.trim());
                 }
                 JSONParser parser = new JSONParser();
-                JSONObject ob = (JSONObject)parser.parse(response.toString());
-                if(con.getResponseCode() == 201 || con.getResponseCode() == 200){
-                    return Integer.parseInt(String.valueOf(ob.get("id")));
-                }
-                else{
-                    
-                    System.out.println(con.getErrorStream().toString());
-                    System.out.println(con.getResponseMessage());
-                    System.exit(0);
-                    int dd;
-                    dd = 0;   
-                }
+                return (JSONObject)parser.parse(response.toString());
             }
             
         } catch (Exception rr) {
@@ -854,7 +844,7 @@ public class MYSQLUpload {
         
         u.okmess(shark.programName, "Failed");
         System.exit(0);
-        return -1;
+        return null;
     }
     
     boolean apiHead(String urlPath, int env) {
@@ -896,11 +886,8 @@ public class MYSQLUpload {
         API_CONFIGS[env].accessToken = accessToken;
     }
 
-    public int UploadTopicHeading(String HeadingDisplay, String HeadingIndex, String OwningCourseID, String OwningCourse, String OwningHeadingID,
-            String TopicHeadingNameType, String Locale, String UnitType, String Description) {
-        if (!uploadStageUploadTopicToHeading) {
-            return -1;
-        }
+    public JSONObject UploadTopicHeading(String HeadingDisplay, String HeadingIndex, String OwningCourse,
+            String TopicHeadingNameType,String UnitType, String Description) {
 
         // get rid of the numbering
         int k = HeadingDisplay.indexOf(')');
@@ -917,10 +904,6 @@ public class MYSQLUpload {
             HeadingDisplay = String.valueOf(Integer.parseInt(HeadingIndex) + 1) + ") " + HeadingDisplay;
         }
 
-        System.out.println("Heading :" + "  " + HeadingDisplay);
-        
-        int ret = -1;
-
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("name", HeadingDisplay);
         jsonObject.put("unit_order", HeadingIndex);
@@ -929,10 +912,8 @@ public class MYSQLUpload {
         if(UnitType != null){
             jsonObject.put("type", UnitType);
         }
-            
-        ret = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/unit",
-            jsonObject.toString(), currentEnvironment);   
-        return ret;
+        
+        return jsonObject;
     }
       
     private int getSharkChallengePlacementUnitIndex(int unitIndex, int wordlistIndex){
@@ -1496,7 +1477,7 @@ public class MYSQLUpload {
                         jsonObject.put("s3key", strS3key);
                         jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
 
-                        apiGetId(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment); 
+                        apiRequest(API_CONFIGS[currentEnvironment].url + "images", jsonObject.toString(), currentEnvironment); 
                     }
                  }   
             }
@@ -1561,7 +1542,7 @@ public class MYSQLUpload {
                         jsonObject.put("s3key", strS3key);
                         jsonObject.put("IsVocab", Boolean.parseBoolean(strIsVocab));
 
-                        apiGetId(API_CONFIGS[currentEnvironment].url + "sounds", jsonObject.toString(), currentEnvironment);                
+                        apiRequest(API_CONFIGS[currentEnvironment].url + "sounds", jsonObject.toString(), currentEnvironment);                
                     }
                 }
             }
@@ -1672,7 +1653,11 @@ public class MYSQLUpload {
             MYSQLUpload.uploadStageUploadWords = true;//ii == 1;
             MYSQLUpload.uploadStageUploadRest = true;//ii == 2;
             MYSQLUpload.course = sel[n].get();
-            topicScan(topicTreeList, sel[n], n, courseids, coursenames);
+            currentCourse = sel[n].get();
+            MYSQLGameFiltering = true;
+            clearJson();
+            JSONObject unitsResponse = topicScanForUnits(topicTreeList, sel[n], n, courseids, coursenames);
+            topicScanForWordlists((JSONArray)unitsResponse.get("unit_ids"), topicTreeList, sel[n], n, courseids, coursenames);
         }
 
         doingPort = false;    
@@ -2254,34 +2239,14 @@ public class MYSQLUpload {
         return ret;
     }
 
-    public void topicScan(topicTree topicTreeList, jnode selnode, int p, String courseids[], String coursenames[]) {
-        currentCourse = selnode.get();
-        MYSQLGameFiltering = true;
-        long portStartTime = Calendar.getInstance().getTimeInMillis();
-        String parentCourseID = null;
+    public JSONObject topicScanForUnits(topicTree topicTreeList, jnode selnode, int p, String courseids[], String coursenames[]) {
         String parentName = null;
-        boolean start = true;
-        int levelStart = 2;
-        
-        int k;
-        if ((k = u.findString(coursenames, currentCourse)) >= 0) {
+        if ((u.findString(coursenames, currentCourse)) >= 0) {
             parentName = currentCourse;
-            parentCourseID = courseids[k];
-        } else {
-            int y;
-            y = 9;
-        }
-
-        int topicCount = getTopicCount(selnode);
-        int wordlistDoneCount = 0;        
-
-        
-        String headingss[] = new String[20];
-        int lastUnitId = -1;
+        }       
         int lastUnitIndex = -1;
-        int lasttopicindex = 0;
         
-        clearJson();
+        JSONArray unitsJsonArray = new JSONArray();
 
         boolean firstone = true;
         enumloop:
@@ -2291,86 +2256,99 @@ public class MYSQLUpload {
                 firstone = false;
                 continue enumloop;
             }
+            
+            if (jn.isLeaf()) {
+                continue enumloop;
+            }   
             String sh = jn.get();
             if (sh.trim().equals("")) {
                 continue enumloop;
             }
-
-            if (!jn.isLeaf()) {
-                if (!start) {
-                    continue enumloop;
+            lastUnitIndex += 1;
+            String unitType = null;
+            jnode jnode1 = (jnode) jn.getNextSibling();
+            if (jnode1 == null || (jnode1.get().trim() == "")) {
+                if (selnode.get().equals(COURSE_WORDSHARK)) {
+                    unitType = "ap_end";
                 }
-                lastUnitIndex += 1;
-                int id = jn.getLevel();
-                String unitType = null;
-                jnode jnode1 = (jnode) jn.getNextSibling();
-                if (jnode1 == null || (jnode1.get().trim() == "")) {
-                    if (selnode.get().equals(COURSE_WORDSHARK)) {
-                        unitType = "ap_end";
-                    }
-                }
-                String hhid = null;
-                if (id > levelStart) {
-                    hhid = headingss[id - levelStart - 1];
-                } else if (id == levelStart) {
-                    hhid = null;
-                }
-                int parentHeadingID = UploadTopicHeading(u.formatTextforUpload(sh), String.valueOf(lastUnitIndex), parentCourseID, parentName, hhid, MYSQLUpload.TOPIC_HEADING_NAME_TYPE,
-                        MYSQLUpload.LOCALE, unitType, "dummy description");
-
-                lastUnitId = parentHeadingID;
-                lasttopicindex = 0;
-                headingss[id - levelStart] = String.valueOf(parentHeadingID);
-            } else {
-                String nam = jn.get();
-                if (nam.indexOf("-tion mixed") >= 0) {
-                    start = true;
-                }
-                if (!start) {
-                    continue enumloop;
-                }
-
-                if (nam.startsWith(topicTree.ISTOPIC)) {
-                    nam = nam.substring(1);
-                }
-
-                saveTree1 st1 = (saveTree1) db.find(topic.publictopics, nam, db.TOPIC);
-                
-                String topicName = stripAts(st1.curr.names[0]);
-                t = topic.findtopic(topicName);
-                t.getWords(null, false);
-  
-                treeDetails tree = new treeDetails(
-                    t ,
-                    st1,
-                    topicTreeList,
-                    jn
-                );
-                    
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-                System.out.println(timeStamp + " Starting: " + t.name);
-                JSONObject postJsonObject = new JSONObject();
-                postJsonObject.put("json_data", getTopicJsonForUpload(tree, lastUnitId, lasttopicindex, selnode.get()));
-                wordlistDoneCount++;
-                writeJson(t.name, postJsonObject.toJSONString());
-                int g = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/wordlist",
-                    postJsonObject.toString(), currentEnvironment);
-                lasttopicindex++;
-                System.out.println("....Finished: " + String.valueOf(g) + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
-
             }
+                        
+            JSONObject jsonObject = UploadTopicHeading(u.formatTextforUpload(sh), String.valueOf(lastUnitIndex), parentName, MYSQLUpload.TOPIC_HEADING_NAME_TYPE,
+                unitType, "dummy description"); 
+
+            unitsJsonArray.add(jsonObject);
+
         }
         
-        String str = String.valueOf(java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(Calendar.getInstance().getTimeInMillis() - portStartTime));
-        int res = apiGetId(API_CONFIGS[currentEnvironment].url + "ports/"+currCourseVersion+"/activate", null, currentEnvironment);
-        if(Integer.parseInt(currCourseVersion) == res){
-            u.okmess(shark.programName, "Successfully finished in : " + str + " minutes.", sharkStartFrame.mainFrame);        
-        }
-        else{
-            u.okmess(shark.programName, "Failed in : " + str + " minutes.", sharkStartFrame.mainFrame);          
-        }
+        JSONObject postJsonObject = new JSONObject();
+        postJsonObject.put("json_data", unitsJsonArray);
+        
+        return apiRequest(API_CONFIGS[currentEnvironment].url + "ports/units",
+            postJsonObject.toJSONString(), currentEnvironment);   
     }
 
+    public void topicScanForWordlists(JSONArray unitIds, topicTree topicTreeList, jnode selnode, int p, String courseids[], String coursenames[]) {
+        JSONArray wordlistsJsonArray = new JSONArray();
+        boolean firstone = true;
+        int unitIndex = -1;
+        int wordlistIndex = -1;
+        int wordlistDoneCount = 0; 
+        int topicCount = getTopicCount(selnode);
+        enumloop:
+        for (Enumeration e = ((jnode) selnode).preorderEnumeration(); e.hasMoreElements();) {
+            jnode jn = (jnode) e.nextElement();
+ 
+            if (firstone) {
+                firstone = false;
+                continue enumloop;
+            }
+            if (!jn.isLeaf()) {
+                unitIndex++;
+                wordlistIndex = -1;
+                continue enumloop;
+            } 
+            String sh = jn.get();
+            if (sh.trim().equals("")) {
+                continue enumloop;
+            }
+            
+            wordlistIndex++;
+
+
+            String nam = jn.get();
+            if (nam.startsWith(topicTree.ISTOPIC)) {
+                nam = nam.substring(1);
+            }
+
+            saveTree1 st1 = (saveTree1) db.find(topic.publictopics, nam, db.TOPIC);
+                
+            String topicName = stripAts(st1.curr.names[0]);
+            t = topic.findtopic(topicName);
+            t.getWords(null, false);
+  
+            treeDetails tree = new treeDetails(
+                t ,
+                st1,
+                topicTreeList,
+                jn
+            );
+                    
+            JSONObject wordlistJson = getTopicJsonForUpload(tree, Integer.parseInt(String.valueOf(unitIds.get(unitIndex))), wordlistIndex, selnode.get());
+
+            wordlistsJsonArray.add(wordlistJson);
+            wordlistDoneCount++;
+            System.out.println("....Finished: " + sh + " PROGRESS " + String.valueOf((int)(((float)wordlistDoneCount/topicCount)*100)) + "%");
+        }
+        
+        JSONObject postJsonObject = new JSONObject();
+        postJsonObject.put("json_data", wordlistsJsonArray);
+        writeJson(t.name, postJsonObject.toJSONString());
+        JSONObject responseJson = apiRequest(API_CONFIGS[currentEnvironment].url + "ports/wordlists",
+                    postJsonObject.toString(), currentEnvironment);
+        u.okmess(shark.programName, String.valueOf(responseJson.get("message")), sharkStartFrame.mainFrame);
+    }    
+    
+    
     public String getSingleArrayJson(String keys[], Object values[]) {
         JSONObject objectmain = new JSONObject();
         for (int i = 0; i < keys.length; i++) {
@@ -4587,54 +4565,21 @@ public class MYSQLUpload {
         
         boolean clearJson() {
             // Construct the path to the version folder
-            String versionFolderPath = RESTJSONFOLDER + shark.sep
-                    + ENV_NAMES[currentEnvironment] + shark.sep
-                    + currentCourse + shark.sep
-                    + currCourseVersion;
+            String jsonFilePath = RESTJSONFOLDER + shark.sep
+                + ENV_NAMES[currentEnvironment] + shark.sep
+                + currentCourse + shark.sep
+                + currentCourse + "_"
+                + currCourseVersion + ".json";
 
-            File versionFolder = new File(versionFolderPath);
+            File jsonFile = new File(jsonFilePath);
 
             // If the folder doesn't exist, nothing to delete
-            if (!versionFolder.exists()) {
+            if (!jsonFile.exists()) {
                 return true;
             }
 
-            // Delete the folder recursively
-            return deleteDirectory(versionFolder);
+            return FileUtils.deleteQuietly(jsonFile);
         }
-        
-        private boolean deleteDirectory(File directory) {
-            if (directory == null || !directory.exists()) {
-                return true;
-            }
-
-            // Get all files and subdirectories
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        // Recursively delete subdirectories
-                        if (!deleteDirectory(file)) {
-                            return false;
-                        }
-                    } else {
-                        // Delete files
-                        if (!file.delete()) {
-                            System.err.println("Failed to delete file: " + file.getAbsolutePath());
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            // Finally delete the empty directory
-            boolean deleted = directory.delete();
-            if (!deleted) {
-                System.err.println("Failed to delete directory: " + directory.getAbsolutePath());
-            }
-            return deleted;
-        }        
-        
         
         void writeJson(String topicName, String json) {
 
@@ -4642,8 +4587,8 @@ public class MYSQLUpload {
                 RESTJSONFOLDER + shark.sep
                 + ENV_NAMES[currentEnvironment] + shark.sep
                 + currentCourse + shark.sep
-                + currCourseVersion + shark.sep
-                + toSafeFilename(topicName) + ".json"
+                + currentCourse + "_"
+                + currCourseVersion + ".json"
             );
 
             // Ensure parent directory exists
