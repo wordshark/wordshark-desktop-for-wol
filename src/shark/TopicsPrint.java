@@ -2103,8 +2103,8 @@ ButtonGroup btgroup;
                                             
                     if (mode == MODE_JSON) {
                         ToolsOnlineResources tor = new ToolsOnlineResources();
-                        if (!(new File(ToolsOnlineResources.fileTopics)).exists()) {
-                            tor.writeTopicsJson2(ToolsOnlineResources.fileTopics, headingArray, headingArrayTopics, simpleSentArray, simpleSentFullArray, simpleSentArrayTopics, standSentArray, standSentArrayTopics,
+                        if (!(new File(ToolsOnlineResources.fileTopicsShared)).exists()) {
+                            tor.writeTopicsJson2(ToolsOnlineResources.fileTopicsShared, headingArray, headingArrayTopics, simpleSentArray, simpleSentFullArray, simpleSentArrayTopics, standSentArray, standSentArrayTopics,
                                     captionsArray, captionsArrayTopics);
                         }
                         if (cbJsonRecordings.isSelected()) {

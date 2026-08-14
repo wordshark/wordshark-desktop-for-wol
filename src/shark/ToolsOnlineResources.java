@@ -25,35 +25,7 @@ import com.mpatric.mp3agic.*;
  * @author paulr
  */
 public class ToolsOnlineResources {
-   
-    /*
-    Tools t = new Tools();  
-    t.findPublicSplitTopicErrors();
-    t.charToAscii("cdd");
-    t.writePublicTopicsJson();pho
-    String ss = t.findJson(fileSounds, "publicsay1", "apple");
-    t.saveAllRecordings();    
-    t.saveAllImages(); 
-    t.doRenameSoundFiles();
-    t.getSoundFilesJson();
-    t.writeOutJsonRecordings(fileSounds, null, new String[]{"publicsay1", "publicsay3", "publicsent1", "publicsent2", "publicsent3"}, false, false, true);      
-    t.writeOutJsonImage(fileImages, new String[]{"publicimage", "publicimageWORDS", "publicimageSENT"}, false, true); 
-    t.copyFilesAddPrefix();   
-    t.checkRecordings();
-    t.gretchenNotUsed();
-    t.gretchenNotDone();
-    t.getAspectRatioExtremes();
-    t.findDuplicateImageFiles();
-    t.copyRenameRecordings(Tools.fileSounds, new String[]{"gamerecordings", "publicsay1", "publicsay3", "publicsent1", "publicsent2", "publicsent3"});
-    t.addPrefixesToImages();
-    t.amalgamateFolders();
-    t.folderiseAnimations();
-    t.renameSkipping();
-    t.renameWithZeros();
-    */
 
-    
-    
     /*
   sound files - sounds recorded but not used were removed except for publisay1:
         exam
@@ -373,6 +345,7 @@ public class ToolsOnlineResources {
     
     static String outputFolder = "publictopicsPrint";
  //   static String fileImageNames = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"imagenames"+jsonext; // contains the old names and new names of the images
+    static String fileTopicsShared = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"topics"+jsonext;
     static String fileImages = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"images"+jsonext; // contains the old names and new names of the images
     static String fileSounds = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"recordings"+jsonext;   // contains the old names and new names of only those recordings that are wanted in the online version
     static String fileSounds2 = sharkStartFrame.sharedPathplus+outputFolder+shark.sep+"recordings2"+jsonext;
