@@ -1842,6 +1842,10 @@ public class MYSQLUpload {
             return s.substring(0, k);
         }
     }
+    
+    static String stripNonsenseWordsMarker(String s) {
+        return s.replace("!", "");
+    }
 
 
     static String getHashUUID(String s) {
@@ -1858,15 +1862,6 @@ public class MYSQLUpload {
         }
         return h;
     }
-
-//    String getGameIDFromNames(int staticGameIDs[], String staticGameNames[], String staticGameSubNames[], String gamename, String gamesubname) {
-//        for (int i = 0; i < staticGameNames.length; i++) {
-//            if (gamename.equalsIgnoreCase(staticGameNames[i]) && gamesubname.equals(staticGameSubNames[i])) {
-//                return String.valueOf(staticGameIDs[i]);
-//            }
-//        }
-//        return null;
-//    }
     
     String getCourseIDFromNames(int staticCourseIDs[], String staticCourseNames[], String coursename) {
         for (int i = 0; i < staticCourseNames.length; i++) {
@@ -1877,267 +1872,6 @@ public class MYSQLUpload {
         return null;
     }
     
-    
-    /*
-     public void UploadGames(boolean wantUpdate) {
-
-        String staticGameNames[] = new String[]{};
-        String staticGameSubNames[] = new String[]{};
-        String staticGameWholeNames[] = new String[]{};
-        int staticGameIDs[] = new int[]{};
-        String cvsSplitBy = ",";
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray jsonarr = (JSONArray) parser.parse(new FileReader(sharkStartFrame.publicPathplus + "json" + shark.sep + "GamesAndIDs.json"));
-            for (int i = 0; i < jsonarr.size(); i++) {
-                JSONObject jo = (JSONObject) jsonarr.get(i);
-                staticGameIDs = u.addint(staticGameIDs, ((Long) jo.get("id")).intValue());
-                String gname = (String) jo.get("name");
-                String gnamess[] = gname.split(cvsSplitBy);
-                String name = gnamess[0].trim();
-                String subname = gnamess.length > 1 ? gnamess[1].trim() : "";
-                staticGameNames = u.addString(staticGameNames, name);
-                staticGameSubNames = u.addString(staticGameSubNames, subname);
-                staticGameWholeNames = u.addString(staticGameWholeNames, (name + " " + subname).trim());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        String problemGames[] = new String[]{};
-        for (int i = 0; i < ALL_GAMES.length; i++) {
-            if (u.findString(staticGameWholeNames, ALL_GAMES[i]) < 0) {
-                problemGames = u.addString(problemGames, ALL_GAMES[i]);
-            }
-        }
-        if (problemGames.length > 0) {
-            u.okmess(shark.programName + " Misnamed games", u.combineString(problemGames), sharkStartFrame.mainFrame);
-            return;
-        }
-
-        jnode listofgames = (jnode) ttGames.root.getChildAt(1).getChildAt(0);
-        int index = 0;
-
-        int mexlength = 0;
-
-        jnode gametree = (jnode) ttGames.root.getChildAt(1).getChildAt(1);
-
-        loop1:
-
-        for (Enumeration e = gametree.children(); e.hasMoreElements();) {
-            jnode c = (jnode) e.nextElement();
-            String s = c.get();
-
-            // main category
-            if (s.equalsIgnoreCase(REWARDS)) {
-                continue loop1;
-            }
-
-            loop2:
-            for (Enumeration e2 = c.children(); e2.hasMoreElements();) {
-                jnode c2 = (jnode) e2.nextElement();
-
-                loop3:
-                for (Enumeration e3 = c2.children(); e3.hasMoreElements();) {
-                    jnode c3 = (jnode) e3.nextElement();
-                    String game = c3.get();
-
-                    DocumentBuilderFactory docFactory = null;
-
-                    Document doc = null;
-
-
-                    DocumentBuilderFactory docFactory2 = null;
-                    DocumentBuilder docBuilder2 = null;
-                    Document doc2 = null;
-                    Element rootElement2 = null;
-
-
-                    // the games LIST OF GAMES
-                    loop4:
-                    for (Enumeration e4 = listofgames.children(); e4.hasMoreElements();) {
-                        jnode c4 = (jnode) e4.nextElement();
-                        String gamename = c4.get();
-
-                        if (game.substring(1).equals(gamename)) {
-
-                            ArrayList staticAl = gameOptionsStaticLookup(gamename);
-                            String jsonKeys[] = new String[]{};
-                            Object jsonValues[] = new Object[]{};
-
-                            for (int i = 0; staticAl != null && i < staticAl.size(); i++) {
-                                String nams[] = (String[]) staticAl.get(0);
-                                Object vals[] = (Object[]) staticAl.get(1);
-                                jsonKeys = u.addString(jsonKeys, nams);
-                                jsonValues = u2_base.addObjects(jsonValues, vals);
-                            }
-
-
-                            String gametooltip = null;
-                            String gametooltiph = null;
-
-
-                            // game parameters
-                            loop5:
-                            for (Enumeration e5 = c4.children(); e5.hasMoreElements();) {
-                                jnode c5 = (jnode) e5.nextElement();
-                                String gameparameter = c5.get();
-                                String preparam = null;
-                                String endparam = null;
-                                int k = gameparameter.indexOf('=');
-                                if (k >= 0) {
-                                    preparam = gameparameter.substring(0, gameparameter.indexOf('='));
-                                    endparam = gameparameter.substring(gameparameter.indexOf('=') + 1);
-                                }
-                                if (gameparameter.equalsIgnoreCase("needsentences3")) {
-                                    if (u.findString(simpleSentence3Games, gamename) < 0) {
-                                        simpleSentence3Games = u.addString(simpleSentence3Games, gamename);
-                                    }
-                                    gameparameter = "special";
-                                }
-                                if (gameparameter.equalsIgnoreCase("needsentences1")) {
-                                    if (u.findString(simpleSentence1Games, gamename) < 0) {
-                                        simpleSentence1Games = u.addString(simpleSentence1Games, gamename);
-                                    }
-                                    gameparameter = "special";
-                                }
-
-                                if (preparam != null && preparam.equalsIgnoreCase("id") && u.findString(PHONICDISTRACTOR_GAMECODEID, endparam) >= 0) {
-
-                                    gameparameter = "usesphonicdistractors";
-                                }
-
-                                if (isTopicFlag(gameparameter)) {
-                                    String ss[] = doTopicFlag(gameparameter);
-                                    if (ss != null) {
-                                        try {
-                                            if (docFactory2 == null) {
-                                                docFactory2 = DocumentBuilderFactory.newInstance();
-                                                docBuilder2 = docFactory2.newDocumentBuilder();
-                                                doc2 = docBuilder2.newDocument();
-                                                rootElement2 = doc2.createElement("TopicFlags");
-                                                doc2.appendChild(rootElement2);
-                                            }
-                                        } catch (Exception ee) {
-                                        }
-
-                                        // TopicFlag element
-                                        Element topicflag = doc2.createElement("TopicFlag");
-                                        rootElement2.appendChild(topicflag);
-
-                                        // set attributes
-                                        Attr attr = doc2.createAttribute("TypeFlag");
-                                        attr.setValue(String.valueOf(ss[0]));
-                                        topicflag.setAttributeNode(attr);
-
-                                        attr = doc2.createAttribute("Condition");
-                                        attr.setValue(String.valueOf(ss[1]));
-                                        topicflag.setAttributeNode(attr);
-                                    }
-
-                                } else if (preparam != null && preparam.equalsIgnoreCase("tooltip")) {
-                                    gametooltip = endparam;
-                                } else if (preparam != null && preparam.equalsIgnoreCase("tooltiph")) {
-                                    gametooltiph = endparam;
-                                } else if (preparam != null && preparam.equalsIgnoreCase("options")) {
-                                    try {
-                                        String ss[] = u.splitString(endparam, ',');
-                                        mexlength = Math.max(ss.length, mexlength);
-                                        loop6:
-                                        for (int i = 0; i < ss.length; i++) {
-                                            ArrayList al = gameOptionsLookup(gamename, ss[i]);
-                                            if (al == null) {
-                                                continue loop6;
-                                            }
-
-                                            jsonKeys = u.addString(jsonKeys, String.valueOf(al.get(0)));
-                                            jsonValues = u2_base.addObject(jsonValues, al.get(1));
-                                        }
-                                    } catch (Exception ex) {
-                                    }
-
-                                }
-                            };
-
-                            if (docFactory != null) {
-                                try {
-                                    DOMSource domSource = new DOMSource(doc);
-                                    StringWriter writer = new StringWriter();
-                                    StreamResult result = new StreamResult(writer);
-                                    TransformerFactory tf = TransformerFactory.newInstance();
-                                    Transformer transformer = tf.newTransformer();
-                                    transformer.transform(domSource, result);
-                                    writer.flush();
-                                    writer.toString();
-                                } catch (TransformerException ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
-
-                            if (docFactory2 != null) {
-                                try {
-                                    DOMSource domSource = new DOMSource(doc2);
-                                    StringWriter writer = new StringWriter();
-                                    StreamResult result = new StreamResult(writer);
-                                    TransformerFactory tf = TransformerFactory.newInstance();
-                                    Transformer transformer = tf.newTransformer();
-                                    transformer.transform(domSource, result);
-                                    writer.flush();
-                                } catch (TransformerException ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
-                            if (gametooltip != null && gametooltip.trim().equals("")) {
-                                gametooltip = null;
-                            }
-                            if (gametooltiph != null && gametooltiph.trim().equals("")) {
-                                gametooltiph = null;
-                            }
-
-                            String sss = getGameProperty(c4, "icon=");
-                            String sicon = "i_" + sss;
-                            sharkImage im = sharkImage.find(sicon);
-                            if (im != null && currSaveSharkImage != null && !sicon.equals("i_salvage")) {
-                                getHashOfSaveImage(currSaveSharkImage);
-                            }
-                            int k;
-                            String gamesubname = null;
-                            String origamename = gamename;
-                            if ((k = gamename.indexOf("(")) > 1) {
-                                gamesubname = gamename.substring(k).trim();
-                                gamename = gamename.substring(0, k).trim();
-                            }
-//                            String gameId = getGameIDFromNames(staticGameIDs, staticGameNames, staticGameSubNames, gamename, gamesubname == null ? "" : gamesubname);
-//                            if (gameId == null) {
-//                                System.out.println("Game ID is null");
-//                                System.exit(0);
-//                            }
-//                            int g = Integer.parseInt(gameId);
-//                            gameNames = u.addString(gameNames, origamename);
-//                            gameCategory = u.addString(gameCategory, String.valueOf(index));
-//                            gameID = u.addint(gameID, g);
-                            continue loop4;
-                        }
-                    }
-                }
-            }
-            index++;
-        }
-        int g;
-        g = 0;
-    }   
-    
-    */
-
-//    static int getGameID(String name, String category) {
-//        for (int i = 0; i < gameNames.length; i++) {
-//            if (gameNames[i].equalsIgnoreCase(name) && gameCategory[i].equals(category)) {
-//                return gameID[i];
-//            }
-//        }
-//        return -1;
-//    }
-
     static int getGameID(String fullNameIncludingSubName) {
         for (int i = 0; i < allGameNames.length; i++) {
             if (allGameNames[i].equalsIgnoreCase(fullNameIncludingSubName)) {
@@ -3964,7 +3698,12 @@ public class MYSQLUpload {
         JSONObject reference = new JSONObject();
         reference.put("plainword", w.v());
         
-        reference.put("fullword", stripAts(w.value));
+        String fullWord = stripAts(w.value);
+        if(w.phonicsw){
+           fullWord = stripNonsenseWordsMarker(stripAts(w.value)); 
+        }
+        
+        reference.put("fullword", fullWord);
         reference.put("patternword", w.pat);  // helicopter/pattern
         
         if(wantResourceProperties(uploadType)){
