@@ -52,7 +52,7 @@ import org.apache.commons.io.FileUtils;
  */
 public class MYSQLUpload {
     
-    final static String PROJECT_PATH = "C:\\Users\\PaulRubie\\Documents\\NetBeansProjects\\wordshark_desktop_for_wol\\";
+    final static String PROJECT_PATH = "C:\\NetBeansProjects\\wordshark_desktop_for_wol\\";
     static String accessToken = null;
     static int currentEnvironment = -1;
     static String currentCourse = null;
@@ -242,7 +242,7 @@ public class MYSQLUpload {
     final static String COURSE_SECONDARY_SUBJECT = "Secondary school subject lists";
     final static String COURSE_HFW = "High Frequency Words (HFW)";
     final static String COURSE_WORDSHARK_TEST = "Wordshark course test";
-    final static String COURSE_SPELLING_CATCH_UP = "Spelling catch up for older users";
+    final static String COURSE_SPELLING_CATCH_UP = "Core skills for Secondary & above";
 
     final static String[] ALL_COURSES = new String[]{
         COURSE_WORDSHARK,
@@ -3578,7 +3578,7 @@ public class MYSQLUpload {
         JSONArray wordsArray = new JSONArray();
         for (int i = 0; i < words.length; ++i) {
             JSONObject word = new JSONObject();
-            word.put("plainword", words[i].toLowerCase());
+            word.put("plainword", words[i]);
             if(images != null){
                 word.put("image_file_name", getSentenceWordImageFileName(images[i]));
             }          
@@ -4063,7 +4063,7 @@ public class MYSQLUpload {
     JSONArray getWordReferenceArrayFromArray(treeDetails tree, String[] stringArray, String[] patterns, String uploadType) {
         JSONArray references = new JSONArray();
         for (int i = 0; i < stringArray.length; ++i) {
-            word word = new word(stringArray[i].toLowerCase(),"publictopics");
+            word word = new word(stringArray[i],"publictopics");
             String patternWord = getTargetWithAnyPattern(word.v(), patterns);
             if(patternWord != null && !patternWord.equals(word.v())){
                 word.pat = patternWord;
