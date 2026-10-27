@@ -3527,9 +3527,9 @@ public class MYSQLUpload {
                 }
             }
             String[] filteredDistractorsArray = filteredDistractors.toArray(new String[filteredDistractors.size()]);
-            subSelect.put("wrongWords", getSentenceWords(filteredDistractorsArray, null));
+            subSelect.put("wrongWords", getSentenceWords(tree, filteredDistractorsArray, null));
         } else {
-            subSelect.put("wrongWords", getSentenceWords(filteredWords, null));
+            subSelect.put("wrongWords", getSentenceWords(tree, filteredWords, null));
         }
         /*
         
@@ -3540,7 +3540,7 @@ public class MYSQLUpload {
         subSelect.put("desktopSelectIndex", selectIndex);
         subSelect.put("sentence", u.formatTextforUpload(sent.stripclozereplacewildcard()));
         
-        subSelect.put("rightWords", getSentenceWords(targetWords, getSentenceTargetImages(tree.st.curr.names[i])));
+        subSelect.put("rightWords", getSentenceWords(tree, targetWords, getSentenceTargetImages(tree.st.curr.names[i])));
         String sentText = removeSentenceImageSuffix(tree.st.curr.names[i].toLowerCase().replace("|", " "));
         subSelect.put("soundPeep", tor.findJsonRecording(jsonRecResults, getSoundDatabaseForSentenceGame(tree, uploadType, false), sentText));
         if(uploadType == UPLOAD_TYPE_SENTENCES_SIMPLE){   
@@ -3574,14 +3574,15 @@ public class MYSQLUpload {
         return "publicsent2";
     }      
     
-    JSONArray getSentenceWords(String[] words, String[] images) {
+    JSONArray getSentenceWords(treeDetails tree, String[] words, String[] images) {
         JSONArray wordsArray = new JSONArray();
         for (int i = 0; i < words.length; ++i) {
             JSONObject word = new JSONObject();
             word.put("plainword", words[i]);
             if(images != null){
                 word.put("image_file_name", getSentenceWordImageFileName(images[i]));
-            }          
+            }     
+            word.put("sound_file_name", getSoundFileName(tree, new word(words[i],"publictopics")));       
             wordsArray.add(word);
         }  
         return wordsArray;
