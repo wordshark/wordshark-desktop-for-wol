@@ -111,14 +111,6 @@ public class MYSQLUpload {
 
     String currCourseVersion = null;
 
-    int WORD_TYPE_STANDARD = 0;
-    int WORD_TYPE_PAIRS = 1;
-    int WORD_TYPE_EXTENDED = 2;
-    int WORD_TYPE_PATTERNGAME = 3;
-    int WORD_TYPE_SENTENCE = 4;
-    int WORD_TYPE_TARGET = 5;
-    int WORD_TYPE_FL = 6;
-    int WORD_TYPE_SIMPLE = 7;
     int HELICOPTERMAXSELECT = 9;
     
     final static int ENV_LOCAL = 0;
@@ -3704,6 +3696,10 @@ public class MYSQLUpload {
            fullWord = stripNonsenseWordsMarker(stripAts(w.value)); 
         }
         
+        if((uploadType.equals(UPLOAD_TYPE_STANDARD) || uploadType.equals(UPLOAD_TYPE_EXTENDED))){
+            fullWord = addSyllableSplits(t.name, fullWord);
+        }
+        
         reference.put("fullword", fullWord);
         reference.put("patternword", w.pat);  // helicopter/pattern
         
@@ -3727,7 +3723,7 @@ public class MYSQLUpload {
                 reference.put("homophone_file_name", homophoneSound);
             }
 
-            if((uploadType == UPLOAD_TYPE_STANDARD || uploadType == UPLOAD_TYPE_EXTENDED) &&
+            if((uploadType.equals(UPLOAD_TYPE_STANDARD) || uploadType.equals(UPLOAD_TYPE_EXTENDED)) &&
                     w.phonicsw){            
                 reference.put("split_sound_file_names", getSoundsForWord(w, mainSoundFileName));
             }   
