@@ -4000,16 +4000,14 @@ public class MYSQLUpload {
                         references.add(reference);                   
                     }
                 }
-                else{
-                    if(tree.st.curr.names[i].startsWith("Select")){
-                        startSelectNoLevel = tree.st.curr.levels[i];
-                        selectNo = getSelectNoFromSelectString(tree.st.curr.names[i]);               
-                    }                
-                    if(tree.st.curr.names[i].startsWith("All or none")){
-                        startAllOrNoneLevel = tree.st.curr.levels[i];
-                        name = "All or none";
-                    }                   
-                }
+                if(tree.st.curr.names[i].startsWith("Select")){
+                    startSelectNoLevel = tree.st.curr.levels[i];
+                    selectNo = getSelectNoFromSelectString(tree.st.curr.names[i]);               
+                }                
+                if(tree.st.curr.names[i].startsWith("All or none")){
+                    startAllOrNoneLevel = tree.st.curr.levels[i];
+                    name = "All or none";
+                }                   
                 if(tree.st.curr.levels[i]<startLevel){
                     break;
                 }
